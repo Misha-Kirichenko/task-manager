@@ -1,0 +1,36 @@
+services:
+  database:
+    image: postgres:latest
+    container_name: database
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - simple_task_manager:/var/lib/postgresql/data
+    networks:
+      - simple-task-manager-network
+
+  api:
+    build:
+      context: ./backend
+    container_name: api
+    command: npm run start
+    volumes:
+      - user_uploads:/app/user_uploads/
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
+    environment:
+      PORT: ${BACKEND_PORT}
+      DB_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+    depends_on:
+      - database
+    networks:
+      - simple-task-manager-network
+
+volumes:
+  user_uploads:
+  simple_task_manager:
+
+networks:
+  simple-task-manager-network:

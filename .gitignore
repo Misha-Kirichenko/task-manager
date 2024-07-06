@@ -1,0 +1,12 @@
+# Ignore all images
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.gif
+**/*.svg
+
+# Ignore all .env files
+**/.env
+
+# Ignore node_modules directory
+**/node_modules/
