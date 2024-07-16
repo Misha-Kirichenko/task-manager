@@ -25,7 +25,7 @@ module.exports = (conn) => {
             role: { type: DataTypes.STRING, defaultValue: "USER", allowNull: false },
             avatar: { type: DataTypes.STRING, allowNull: true, default: null },
           }, { transaction });
-          console.log("Successfully run users migrations");
+          console.log("Successfully executed users migrations");
         }
         await transaction.commit();
       } catch (error) {

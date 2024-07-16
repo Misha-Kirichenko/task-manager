@@ -1,7 +1,9 @@
+require("dotenv").config();
+
 const settings = {
   dialect: "postgres",
-  host: 'task_manager_db',
-  port: 5432,
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT,
   pool: {
     max: 5,
     min: 0,
