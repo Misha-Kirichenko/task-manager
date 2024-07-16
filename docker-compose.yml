@@ -1,36 +1,37 @@
 services:
-  database:
-    image: postgres:latest
-    container_name: database
+  task_manager_db:
+    restart: on-failure
+    image: postgres
+    container_name: task_manager_db
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - simple_task_manager:/var/lib/postgresql/data
+      - task_manager:/var/lib/postgresql/data
     networks:
-      - simple-task-manager-network
+      - task-manager-network
 
-  backend:
+  task_manager_backend:
     build:
       context: ./backend
-    container_name: backend
-    command: npm run start
+    container_name: task_manager_backend
+    command: npm run migrate_seed_and_start
     volumes:
       - user_uploads:/app/user_uploads/
     ports:
       - ${BACKEND_PORT}:${BACKEND_PORT}
     environment:
       PORT: ${BACKEND_PORT}
-      DB_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      DB_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@task_manager_db:5432/${POSTGRES_DB}
     depends_on:
-      - database
+      - task_manager_db
     networks:
-      - simple-task-manager-network
+      - task-manager-network
 
 volumes:
   user_uploads:
-  simple_task_manager:
+  task_manager:
 
 networks:
-  simple-task-manager-network:
+  task-manager-network:

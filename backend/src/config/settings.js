@@ -1,8 +1,7 @@
 const settings = {
   dialect: "postgres",
-  host: 'database',
+  host: 'task_manager_db',
   port: 5432,
-  password: process.env.PASSWORD,
   pool: {
     max: 5,
     min: 0,

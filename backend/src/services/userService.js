@@ -1,6 +1,5 @@
-const { Sequelize: DataTypes } = require("sequelize");
 const conn = require("@config/conn");
-const User = require("@models/User")(conn, DataTypes);
+const User = require("@models/User")(conn);
 const createHttpException = require("@utils/createHttpException");
 
 

@@ -1,4 +1,6 @@
-module.exports = (conn, DataTypes) => {
+const { Sequelize: DataTypes } = require("sequelize");
+
+module.exports = (conn) => {
   const User = conn.define("user",
     {
       id: {
