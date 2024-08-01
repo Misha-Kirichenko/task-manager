@@ -4,8 +4,11 @@ const { Sequelize } = require("sequelize")
 
 const settings = require('./settings');
 
+
 const conn = new Sequelize(
-  process.env.DB, process.env.USER, process.env.PASSWORD,
+  process.env.DB, 
+  process.env.USER, 
+  process.env.PASSWORD,
   settings
 );
 

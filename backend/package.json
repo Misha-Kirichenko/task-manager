@@ -8,7 +8,7 @@
     "start": "node src/app.js",
     "migrate:all": "node src/migrations/index.js",
     "seed:all": "node src/seeders/index.js",
-    "migrate_seed_and_start": "npm run migrate:all && npm run seed:all && npm run start"
+    "install_migrate_seed_and_start": "npm i && npm run migrate:all && npm run seed:all && npm run start"
   },
   "keywords": [
     "Pet project",
@@ -23,6 +23,7 @@
     "bcrypt": "^5.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
     "npm": "^10.8.1",
     "pg": "^8.12.0",

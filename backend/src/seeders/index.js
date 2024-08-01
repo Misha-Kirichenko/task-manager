@@ -11,7 +11,7 @@ const usersSeeder = require("./Users")(conn);
 (async () => {
   try {
     const seeders = [
-      usersSeeder.up()
+      usersSeeder.up(100)
     ];
     await Promise.all(seeders)
   } catch (error) {
