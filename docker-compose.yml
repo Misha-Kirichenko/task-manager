@@ -30,7 +30,7 @@ services:
       - task-manager-db
     networks:
       - task-manager-network
-
+  
 volumes:
   user_uploads:
   taskManagerDB:

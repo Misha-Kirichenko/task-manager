@@ -37,7 +37,8 @@
     "@controllers": "./src/controllers",
     "@services": "./src/services",
     "@config": "./src/config",
-    "@utils": "./src/utils"
+    "@utils": "./src/utils",
+    "@middlewares": "./src/middlewares"
   },
   "devDependencies": {
     "faker": "^5.5.3"

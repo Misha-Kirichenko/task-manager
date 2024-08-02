@@ -2,12 +2,12 @@ const { Router } = require('express');
 const router = Router();
 const userService = require('@services/userService');
 const getValidErrorData = require('@utils/statusCodeMessages');
+const verifyToken = require('@middlewares/verifyToken');
 
-router.post('/login', async (req, res) => {
+router.get('/profile', verifyToken("access"), async (req, res) => {
   try {
-    const { login, password } = req.body;
-    const answer = await userService.login(login, password);
-    return res.send(answer);
+    const profile = await userService.getProfile(req.user.id);
+    return res.send(profile);
   } catch (error) {
     const { status, message } = getValidErrorData(error);
     return res.status(status).send({ message });
