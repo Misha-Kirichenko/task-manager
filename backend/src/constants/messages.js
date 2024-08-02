@@ -6,5 +6,10 @@ module.exports = {
     BAD_REQUEST: 'Ooops...Something went wrong!',
     UNAUTHORIZED: 'Invalid credentials',
     FORBIDDEN: 'You have no access rights',
+    INCORRECT_PASSWORD: "Current password is incorrect",
+    INVALID_PASSWORD: 'New Password must be at least 8 characters long, contain at least one digit, and at least one non-digit character'
   },
+  SUCCESS: {
+    PASSWORD_UPDATED: "Password was successfully updated"
+  }
 };
