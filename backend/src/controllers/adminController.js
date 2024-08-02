@@ -1,10 +1,10 @@
 const { Router } = require('express');
 const router = Router();
 const conn = require("@config/conn");
-const User = require("@models/User")(conn);
-const authService = require('@services/authService')(User);
-const profileService = require("@services/profileService")(User);
-const passwordService = require('@services/passwordService')(User);
+const Admin = require("@models/Admin")(conn);
+const authService = require('@services/authService')(Admin);
+const profileService = require("@services/profileService")(Admin);
+const passwordService = require('@services/passwordService')(Admin);
 const getValidErrorData = require('@utils/statusCodeMessages');
 const verifyToken = require('@middlewares/verifyToken');
 const validatePassword = require('@middlewares/validatePassword');

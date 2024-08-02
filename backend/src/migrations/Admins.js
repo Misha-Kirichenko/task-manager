@@ -1,5 +1,4 @@
 const { Sequelize: DataTypes } = require("sequelize");
-const ROLES = require("@constants/roles");
 
 module.exports = (conn) => {
   const queryInterface = conn.getQueryInterface();
@@ -8,26 +7,25 @@ module.exports = (conn) => {
       const transaction = await conn.transaction();
       try {
         const [tableExists] = await queryInterface.sequelize.query(
-          `SELECT * FROM information_schema.tables WHERE table_name = 'users'`,
+          `SELECT * FROM information_schema.tables WHERE table_name = 'admins'`,
           { transaction }
         );
 
         if (!tableExists.length) {
-          await queryInterface.createTable("users", {
+          await queryInterface.createTable("admins", {
             id: {
               type: DataTypes.INTEGER,
               primaryKey: true,
               autoIncrement: true,
             },
-            name: { type: DataTypes.STRING, allowNull: false },
-            surname: { type: DataTypes.STRING, allowNull: false },
-            email: { type: DataTypes.STRING, unique: true, allowNull: false },
+            name: { type: DataTypes.STRING, allowNull: true },
+            surname: { type: DataTypes.STRING, allowNull: true },
+            login: { type: DataTypes.STRING, allowNull: true, unique: true, defaultValue: null },
+            email: { type: DataTypes.STRING, unique: true, allowNull: true },
             password: { type: DataTypes.STRING, allowNull: false },
-            role: { type: DataTypes.STRING, defaultValue: "USER", allowNull: false, isIn: [ROLES] },
-            avatar: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
-            lastLogin: { type: DataTypes.BIGINT, allowNull: false, defaultValue: 0 },
+            root: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
           }, { transaction });
-          console.log("Successfully executed users migration");
+          console.log("Successfully executed admins migration");
         }
         await transaction.commit();
       } catch (error) {
@@ -36,7 +34,7 @@ module.exports = (conn) => {
       }
     },
     down: async () => {
-      await queryInterface.dropTable("users");
+      await queryInterface.dropTable("admins");
     }
   }
 };

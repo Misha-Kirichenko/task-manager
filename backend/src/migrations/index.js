@@ -8,14 +8,16 @@ connectDB(conn);
 
 
 const usersMigration = require("./Users")(conn);
+const adminsMigration = require("./Admins")(conn);
 
 (async () => {
   try {
     const migrations = [
-      usersMigration.up()
+      usersMigration.up(),
+      adminsMigration.up()
     ]
     await Promise.all(migrations);
   } catch (error) {
-    console.error(error);
+    console.error("migrations error:", error);
   }
 })();

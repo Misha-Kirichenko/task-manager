@@ -14,8 +14,8 @@ module.exports = (conn) => {
       email: { type: DataTypes.STRING, unique: true, allowNull: false },
       password: { type: DataTypes.STRING, allowNull: false },
       role: { type: DataTypes.STRING, defaultValue: "USER", allowNull: false, isIn: [ROLES] },
-      avatar: { type: DataTypes.STRING, allowNull: true, default: null },
-      lastLogin: { type: DataTypes.BIGINT, allowNull: false, default: 0 },
+      avatar: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
+      lastLogin: { type: DataTypes.BIGINT, allowNull: false, defaultValue: 0 },
     },
     { timestamps: false }
   );
