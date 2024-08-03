@@ -32,8 +32,8 @@ module.exports = (Model) => ({
     if (foundUser) {
       const passwordsMatch = await bcrypt.compare(password, foundUser.password);
       if (passwordsMatch) {
-        const { id, role } = foundUser;
-        const tokenPairs = generateTokenPairs({ id, login, ...(role && { role }) });
+        const { id, role, email } = foundUser;
+        const tokenPairs = generateTokenPairs({ id, login, ...(role ? { role } : email ? { role: "ADMIN" } : { role: "ROOT" }) });
 
         //check on undefined because lastLogin can be 0
         if (foundUser.lastLogin !== undefined) {
