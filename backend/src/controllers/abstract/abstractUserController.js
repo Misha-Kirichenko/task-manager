@@ -1,8 +1,8 @@
 const { Router } = require('express');
 
-const getValidErrorData = require('@utils/statusCodeMessages');
-const verifyToken = require('@middlewares/verifyToken');
-const validatePassword = require('@middlewares/validatePassword');
+const { statusCodeMessage } = require('@utils');
+const { verifyTokenMiddleware } = require('@middlewares/auth');
+const { validatePasswordMiddleware } = require('@middlewares/validation');
 
 
 module.exports = (Model) => {
@@ -16,28 +16,28 @@ module.exports = (Model) => {
       const answer = await authService.login(login, password);
       return res.send(answer);
     } catch (error) {
-      const { status, message } = getValidErrorData(error);
+      const { status, message } = statusCodeMessage(error);
       return res.status(status).send({ message });
     }
   });
 
 
-  router.get('/profile', verifyToken("access"), async (req, res) => {
+  router.get('/profile', verifyTokenMiddleware("access"), async (req, res) => {
     try {
-      const profile = await profileService.getProfile(req.user.id);
+      const profile = await profileService.getProfile(req.user.login, req.user.role);
       return res.send(profile);
     } catch (error) {
-      const { status, message } = getValidErrorData(error);
+      const { status, message } = statusCodeMessage(error);
       return res.status(status).send({ message });
     }
   });
 
-  router.patch('/password', [verifyToken("access"), validatePassword], async (req, res) => {
+  router.patch('/password', [verifyTokenMiddleware("access"), validatePasswordMiddleware], async (req, res) => {
     try {
-      const answer = await profileService.updatePassword(req.user.id, req.body);
+      const answer = await profileService.updatePassword(req.user.login, req.user.role, req.body);
       return res.send(answer);
     } catch (error) {
-      const { status, message } = getValidErrorData(error);
+      const { status, message } = statusCodeMessage(error);
       return res.status(status).send({ message });
     }
   });

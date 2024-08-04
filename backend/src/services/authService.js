@@ -1,33 +1,24 @@
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const createHttpException = require("@utils/createHttpException");
-const generateTokenPairs = require("@utils/securityUtils");
+const { createHttpException, generateTokenPairs, MESSAGE_UTIL } = require("@utils");
 const MESSAGES = require("@constants/messages");
 
 module.exports = (Model) => ({
   async login(login, password) {
-    let foundUser;
+
     if (!login || !password) {
       const badRequestException = createHttpException(400, MESSAGES.ERRORS.ALL_FIELDS_REQUIRED);
       throw badRequestException;
     }
 
-    if (Model.name === "user") {
-      foundUser = await Model.findOne({
-        where: {
-          email: login
-        },
-      });
-    } else if (Model.name === "admin") {
-      foundUser = await Model.findOne({
-        where: {
-          [Op.or]: {
-            email: login,
-            login
-          }
-        },
-      });
-    }
+    const foundUser = await Model.findOne({
+      where: {
+        ...(
+          (Model.name === "user" && { email: login }) ||
+          (Model.name === "admin" && { [Op.or]: { email: login, login } })
+        )
+      },
+    });
 
     if (foundUser) {
       const passwordsMatch = await bcrypt.compare(password, foundUser.password);
@@ -47,7 +38,7 @@ module.exports = (Model) => ({
       const unauthorizedException = createHttpException(401, MESSAGES.ERRORS.UNAUTHORIZED);
       throw unauthorizedException;
     }
-    const notFoundException = createHttpException(404, MESSAGES.ERRORS.USER_NOT_FOUND);
+    const notFoundException = createHttpException(404, MESSAGE_UTIL.ERRORS.NOT_FOUND(Model.name));
     throw notFoundException;
   }
 })

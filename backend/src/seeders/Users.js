@@ -16,7 +16,7 @@ module.exports = (conn) => {
             name,
             surname,
             email: faker.internet.email(name, surname).toLowerCase(),
-            password: bcrypt.hashSync('password123', saltRounds),
+            password: bcrypt.hashSync('password123', parseInt(process.env.PASSWORD_SALT_ROUNDS)),
           }
         });
         console.log("Successfully executed users seeder");

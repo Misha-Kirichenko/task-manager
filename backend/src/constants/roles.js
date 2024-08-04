@@ -1,4 +1,4 @@
 module.exports = {
-  ADMIN_ROLES: ["ADMIN", "ROOT"],
-  USER_ROLES: ["USER", "MANAGER"]
+  ADMIN_ROLES: ["ROOT", "ADMIN"],
+  USER_ROLES: ["MANAGER", "USER"]
 }

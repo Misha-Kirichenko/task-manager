@@ -1,7 +1,5 @@
 const router = require("express").Router();
-const authController = require("./controllers/authController");
-const userController = require("./controllers/userController");
-const adminController = require("./controllers/adminController");
+const { authController, userController, adminController } = require("./controllers");
 
 router.use("/auth", authController);
 router.use("/user", userController);
