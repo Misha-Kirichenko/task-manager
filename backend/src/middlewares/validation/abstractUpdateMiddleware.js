@@ -1,8 +1,8 @@
 const REGEX = require("@constants/regex");
 const { ERRORS } = require("@constants/messages");
-const { ERRORS: { INVALID_FIELD, UPDATE_FIELDS } } = require("@utils/messageUtil");
+const { ERRORS: { INVALID_FIELD } } = require("@utils/messageUtil");
 
-const updateUserMiddleware = (req, res, next) => {
+const abstractUpdateMiddleware = (req, res, next) => {
   const { body } = req;
   const fieldsValues = Object.values(body);
 
@@ -31,4 +31,4 @@ const updateUserMiddleware = (req, res, next) => {
 
 };
 
-module.exports = updateUserMiddleware;
+module.exports = abstractUpdateMiddleware;

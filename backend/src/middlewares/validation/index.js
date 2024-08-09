@@ -1,9 +1,11 @@
 const changeUserRoleMiddleware = require("./changeUserRoleMiddleware");
-const updateUserMiddleware = require("./updateUserMiddleware");
 const validatePasswordMiddleware = require("./validatePasswordMiddleware");
+const abstractUpdateMiddleware = require('./abstractUpdateMiddleware');
+const abstractCreateMiddleware = require('./abstractCreateMiddleware');
 
 module.exports = {
   changeUserRoleMiddleware,
-  updateUserMiddleware,
-  validatePasswordMiddleware
+  validatePasswordMiddleware,
+  abstractUpdateMiddleware,
+  abstractCreateMiddleware
 };

@@ -15,7 +15,16 @@ module.exports = (conn) => {
       password: { type: DataTypes.STRING, allowNull: false },
       root: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     },
-    { timestamps: false }
+    {
+      timestamps: false,
+      hooks: {
+        beforeSave: (user) => {
+          if (user.email) {
+            user.email = user.email.toLowerCase();
+          }
+        },
+      },
+    }
   );
   return Admin;
 };

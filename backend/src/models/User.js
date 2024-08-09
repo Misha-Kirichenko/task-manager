@@ -13,11 +13,20 @@ module.exports = (conn) => {
       surname: { type: DataTypes.STRING, allowNull: false },
       email: { type: DataTypes.STRING, unique: true, allowNull: false },
       password: { type: DataTypes.STRING, allowNull: false },
-      role: { type: DataTypes.STRING, defaultValue: USER_ROLES[0], allowNull: false, isIn: [USER_ROLES] },
+      role: { type: DataTypes.STRING, defaultValue: USER_ROLES[1], allowNull: false, isIn: [USER_ROLES] },
       avatar: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
       lastLogin: { type: DataTypes.BIGINT, allowNull: false, defaultValue: 0 },
     },
-    { timestamps: false }
+    {
+      timestamps: false,
+      hooks: {
+        beforeSave: (user) => {
+          if (user.email) {
+            user.email = user.email.toLowerCase();
+          }
+        },
+      },
+    }
   );
   return User;
 };

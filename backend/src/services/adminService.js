@@ -48,3 +48,9 @@ exports.updateUser = async (id, body) => {
 
   return { message: MESSAGE_UTIL.SUCCESS.UPDATED("User's data") };
 }
+
+exports.createUser = async (body) => {
+  const hashedPassword = await bcrypt.hash(body.password, parseInt(process.env.PASSWORD_SALT_ROUNDS));
+  await User.create({ ...body, password: hashedPassword });
+  return { message: MESSAGE_UTIL.SUCCESS.CREATED("User") };
+}
