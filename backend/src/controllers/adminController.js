@@ -60,7 +60,7 @@ router.post('/user',
   ], async (req, res) => {
     try {
       const answer = await adminService.createUser(req.body);
-      return res.send(answer);
+      return res.status(201).send(answer);
     } catch (error) {
       const [errorType, errorDetails] = Object.values(error);
       if (errorType === "SequelizeUniqueConstraintError") {

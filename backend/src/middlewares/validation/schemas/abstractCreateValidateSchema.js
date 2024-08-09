@@ -1,5 +1,5 @@
 const { ERRORS } = require("@constants/messages");
-const { validateWithModelFields } = require("@utils");
+const { validateWithModelFields, MESSAGE_UTIL } = require("@utils");
 
 const abstractCreateValidateSchema = (Model) => (req, res, next) => {
   try {
@@ -11,7 +11,7 @@ const abstractCreateValidateSchema = (Model) => (req, res, next) => {
 
     for (const field in body) {
       if (!modelAttributes[field]) {
-        return res.status(400).send({ message: `field '${field}' is unacceptable!` });
+        return res.status(400).send({ message: MESSAGE_UTIL.ERRORS.UNACCEPTABLE(field) });
       }
     }
 
@@ -20,13 +20,13 @@ const abstractCreateValidateSchema = (Model) => (req, res, next) => {
 
       if (!modelAttributes[field].hasOwnProperty("defaultValue") && !allowNull) {
         if (!body.hasOwnProperty(field)) {
-          errors[field] = [`${field} is required`];
+          errors[field] = [MESSAGE_UTIL.ERRORS.REQUIRED(field)];
         }
         else if (!body[field]) {
-          errors[field] = [`${field} can't be empty, undefined or null`];
+          errors[field] = [MESSAGE_UTIL.ERRORS.NO_VALUE(field)];
         }
         else if (!validateWithModelFields(body[field], type)) {
-          errors[field] = [`${field} must be of type ${type.key}.`];
+          errors[field] = [MESSAGE_UTIL.ERRORS.INVALID_TYPE(field, type)];
         }
       }
 
