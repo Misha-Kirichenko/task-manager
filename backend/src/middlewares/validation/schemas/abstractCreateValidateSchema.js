@@ -29,7 +29,11 @@ const abstractCreateValidateSchema = (Model) => (req, res, next) => {
           errors[field] = [MESSAGE_UTIL.ERRORS.INVALID_TYPE(field, type)];
         }
       }
-
+      else {
+        if (body.hasOwnProperty(field) && !validateWithModelFields(body[field], type)) {
+          errors[field] = [MESSAGE_UTIL.ERRORS.INVALID_TYPE(field, type)];
+        }
+      }
     }
 
     req.errors = errors;

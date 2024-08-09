@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const conn = require('@config/conn');
-const User = require('@models/User')(conn);
+const { User } = require('@models')(conn);
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
 const MESSAGES = require("@constants/messages");
 

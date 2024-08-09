@@ -9,6 +9,7 @@ module.exports = {
   },
   SUCCESS: {
     UPDATED: (field) => `${field} was successfully updated`,
-    CREATED: (data) => `${data} was sucessfully created`
+    CREATED: (data) => `${data} was sucessfully created`,
+    MIGRATION: (data) => `Successfully executed ${data} migration`
   }
 };

@@ -1,4 +1,5 @@
 const { Sequelize: DataTypes } = require("sequelize");
+const modifyEmail = require("./hooks/modifyEmail");
 
 module.exports = (conn) => {
   const Admin = conn.define("admin",
@@ -18,11 +19,7 @@ module.exports = (conn) => {
     {
       timestamps: false,
       hooks: {
-        beforeSave: (user) => {
-          if (user.email) {
-            user.email = user.email.toLowerCase();
-          }
-        },
+        beforeSave: modifyEmail
       },
     }
   );

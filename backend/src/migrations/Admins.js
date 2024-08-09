@@ -1,4 +1,5 @@
 const { Sequelize: DataTypes } = require("sequelize");
+const { MIGRATION_UTIL, MESSAGE_UTIL } = require("@utils");
 
 module.exports = (conn) => {
   const queryInterface = conn.getQueryInterface();
@@ -7,7 +8,7 @@ module.exports = (conn) => {
       const transaction = await conn.transaction();
       try {
         const [tableExists] = await queryInterface.sequelize.query(
-          `SELECT * FROM information_schema.tables WHERE table_name = 'admins'`,
+          MIGRATION_UTIL.SELECT_TABLE("admins"),
           { transaction }
         );
 
@@ -25,7 +26,7 @@ module.exports = (conn) => {
             password: { type: DataTypes.STRING, allowNull: false },
             root: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
           }, { transaction });
-          console.log("Successfully executed admins migration");
+          console.log(MESSAGE_UTIL.SUCCESS.MIGRATION("admins"));
         }
         await transaction.commit();
       } catch (error) {

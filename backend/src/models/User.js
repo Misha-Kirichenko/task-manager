@@ -1,4 +1,5 @@
 const { Sequelize: DataTypes } = require("sequelize");
+const modifyEmail = require("./hooks/modifyEmail");
 const { USER_ROLES } = require("@constants/roles");
 
 module.exports = (conn) => {
@@ -20,11 +21,7 @@ module.exports = (conn) => {
     {
       timestamps: false,
       hooks: {
-        beforeSave: (user) => {
-          if (user.email) {
-            user.email = user.email.toLowerCase();
-          }
-        },
+        beforeSave: modifyEmail
       },
     }
   );
