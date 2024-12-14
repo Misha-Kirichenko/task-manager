@@ -1,12 +1,18 @@
 const { ERRORS } = require("@constants/messages");
 const { validateWithModelFields, MESSAGE_UTIL } = require("@utils");
 
-const abstractUpdateValidateSchema = (Model) => (req, res, next) => {
+const abstractUpdateValidateSchema = (Model, excludeFields = []) => (req, res, next) => {
   try {
     const { body } = req;
     const errors = {};
 
     const { rawAttributes: modelAttributes } = Model;
+
+    if(excludeFields.length){
+      for(const field of excludeFields){
+        delete req.body[field];
+      }
+    }
 
     for (const field in body) {
       if (!modelAttributes[field]) {

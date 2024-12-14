@@ -21,6 +21,14 @@ module.exports = (conn) => {
       hooks: {
         beforeSave: modifyEmail
       },
+      defaultScope: {
+				attributes: { exclude: ["password"] }
+			},
+			scopes: {
+				withPassword: {
+					attributes: {}
+				}
+			}
     }
   );
   return Admin;

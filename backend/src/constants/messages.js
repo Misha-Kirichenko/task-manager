@@ -17,7 +17,8 @@ module.exports = {
     ACCEPT_MANAGER: "Only user with role 'MANAGER' is acceptable",
     BOTH_PASSWORDS_REQUIRED: "Both current and new passwords are required",
     INVALID_PASSWORD: 'contain at least one digit and one non-digit character, and be at least 8 characters long',
-    UPDATE_FIELDS: "At least one field must be provided for the update"
+    UPDATE_FIELDS: "At least one field must be provided for the update",
+    UNKNOWN_USER: "No matching user found"
   },
   SUCCESS: {
     PASSWORD_UPDATED: "Password was successfully updated",

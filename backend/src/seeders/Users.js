@@ -7,13 +7,16 @@ module.exports = (conn) => {
     up: async (amount) => {
       const [results] = await queryInterface.sequelize.query("SELECT * FROM users;");
       if (results.length < amount) {
-        const usersToSeed = Math.abs(amount - results);
-        const users = [...Array(usersToSeed)].map(() => {
+        const usersToSeed = Math.abs(amount - results.length);
+        const users = [...Array(usersToSeed)].map((_, index) => {
           const name = faker.name.firstName();
           const surname = faker.name.lastName();
+          const role = index <= 10 ? 'MANAGER' : 'USER'; 
+
           return {
             name,
             surname,
+            role,
             email: faker.internet.email(name, surname).toLowerCase(),
             password: bcrypt.hashSync('password123', parseInt(process.env.PASSWORD_SALT_ROUNDS)),
           }

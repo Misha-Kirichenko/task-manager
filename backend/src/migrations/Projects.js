@@ -21,7 +21,6 @@ module.exports = (conn) => {
             },
             projectName: { type: DataTypes.STRING, unique: true, allowNull: false },
             projectDescription: { type: DataTypes.TEXT, allowNull: false },
-            picture: { type: DataTypes.STRING, allowNull: true, defaultValue: null },
             endDate: { type: DataTypes.BIGINT, allowNull: false, defaultValue: 0 },
             managerId: {
               type: DataTypes.INTEGER,

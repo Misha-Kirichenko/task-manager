@@ -11,7 +11,7 @@ module.exports = (Model) => ({
       throw badRequestException;
     }
 
-    const foundUser = await Model.findOne({
+    const foundUser = await Model.scope("withPassword").findOne({
       where: {
         ...(
           (Model.name === "user" && { email: login }) ||
