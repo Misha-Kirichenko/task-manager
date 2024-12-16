@@ -104,10 +104,31 @@ router.delete(
 
 router.get(
 	"/toggle/:id",
-	[verifyTokenMiddleware("access"), checkRolesMiddleware([...ADMIN_ROLES, USER_ROLES[0]])],
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware([...ADMIN_ROLES, USER_ROLES[0]])
+	],
 	async (req, res) => {
 		try {
 			const answer = await projectService.toggle(req.user, req.params.id);
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
+router.post(
+	"/assign-users/:id",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware([...ADMIN_ROLES, USER_ROLES[0]])
+	],
+	async (req, res) => {
+		try {
+			const { idArray } = req.body;
+			const answer = await projectService.assignUsers(req.user, req.params.id, idArray);
 			return res.send(answer);
 		} catch (error) {
 			const { status, message } = statusCodeMessage(error);

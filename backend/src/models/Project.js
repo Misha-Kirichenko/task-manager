@@ -1,5 +1,6 @@
 const { Sequelize: DataTypes } = require("sequelize");
-const he = require("he");
+const convertToEntities = require("./hooks/convertToEntities");
+
 
 module.exports = (conn) => {
 	const Project = conn.define(
@@ -21,11 +22,7 @@ module.exports = (conn) => {
 		{
 			timestamps: false,
 			hooks: {
-				beforeSave: (project) => {
-					if (project.projectDescription) {
-						project.projectDescription = he.encode(project.projectDescription);
-					}
-				}
+				beforeSave: convertToEntities
 			}
 		}
 	);
