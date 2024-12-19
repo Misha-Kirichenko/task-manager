@@ -1,7 +1,7 @@
 const conn = require("@config/conn");
-const { QueryTypes } = require("sequelize");
+const { QueryTypes, Op } = require("sequelize");
 const { ADMIN_ROLES } = require("@constants/roles");
-const { Project, User } = require("@models")(conn);
+const { Project, User, UserProjects } = require("@models")(conn);
 const { USER_ROLES } = require("@constants/roles");
 const MESSAGES = require("@constants/messages");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
@@ -137,7 +137,7 @@ exports.assignUsers = async (userData, projectId, idArray) => {
 	});
 
 	if (rowCount == 0) {
-		const message = `Conflict: selected users are already assigned or they are managers`;
+		const message = `Conflict: selected users can't be assigned to this project`;
 		const conflictException = createHttpException(409, message);
 		throw conflictException;
 	}
@@ -149,5 +149,48 @@ exports.assignUsers = async (userData, projectId, idArray) => {
 	}
 
 	const message = `Operation successful: ${rowCount} users were assigned to this project`;
+	return { message };
+};
+
+exports.unassign = async (userData, projectId, idArray) => {
+	const foundProject = await Project.findByPk(projectId, {
+		attributes: ["id", "managerId"]
+	});
+
+	if (!foundProject) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Project")
+		);
+		throw notFoundException;
+	}
+
+	if (
+		!ADMIN_ROLES.includes(userData.role) &&
+		foundProject.managerId !== userData.id
+	) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.UNASSIGN_USERS
+		);
+		throw unprocessableException;
+	}
+
+	const totalUnassigned = await UserProjects.destroy({
+		where: {
+			projectId,
+			userId: {
+				[Op.in]: idArray
+			}
+		}
+	});
+
+	if (totalUnassigned == 0) {
+		const message = `Conflict: selected users are not assigned to this project, so they can't be unassigned`;
+		const conflictException = createHttpException(409, message);
+		throw conflictException;
+	}
+
+	const message = `Operation successful: ${totalUnassigned} users unassigned from this project`;
 	return { message };
 };
