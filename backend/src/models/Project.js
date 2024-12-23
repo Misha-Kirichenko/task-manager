@@ -1,6 +1,6 @@
 const { Sequelize: DataTypes } = require("sequelize");
-const convertToEntities = require("./hooks/convertToEntities");
-
+const { convertToEntities } = require("./hooks");
+const mutateDates = require("./hooks/mutateDates");
 
 module.exports = (conn) => {
 	const Project = conn.define(
@@ -13,6 +13,11 @@ module.exports = (conn) => {
 			},
 			projectName: { type: DataTypes.STRING, unique: true, allowNull: false },
 			projectDescription: { type: DataTypes.TEXT, allowNull: false },
+			startDate: {
+				type: DataTypes.BIGINT,
+				allowNull: false,
+				defaultValue: Date.now
+			},
 			endDate: { type: DataTypes.BIGINT, allowNull: false, defaultValue: 0 },
 			managerId: {
 				type: DataTypes.INTEGER,
@@ -22,7 +27,8 @@ module.exports = (conn) => {
 		{
 			timestamps: false,
 			hooks: {
-				beforeSave: convertToEntities
+				beforeSave: convertToEntities,
+				afterFind: mutateDates
 			}
 		}
 	);

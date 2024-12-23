@@ -2,7 +2,7 @@ const { Sequelize: DataTypes } = require("sequelize");
 
 module.exports = (conn) => {
 	const UserProjects = conn.define(
-		"user_projects",
+		"user_project",
 		{
 			id: {
 				type: DataTypes.INTEGER,
@@ -24,6 +24,11 @@ module.exports = (conn) => {
 				{
 					unique: true,
 					fields: ["userId", "projectId"]
+				},
+				{
+					unique: false,
+					fields: ["projectId"],
+					using: "HASH"
 				}
 			]
 		}

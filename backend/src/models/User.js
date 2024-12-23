@@ -1,5 +1,5 @@
 const { Sequelize: DataTypes } = require("sequelize");
-const modifyEmail = require("./hooks/modifyEmail");
+const { modifyEmail } = require("./hooks");
 const { USER_ROLES } = require("@constants/roles");
 
 module.exports = (conn) => {

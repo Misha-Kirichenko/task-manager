@@ -1,11 +1,36 @@
-const { Router } = require('express');
+const { Router } = require("express");
 const router = Router();
-const createAbstractUserController = require('@controllers/abstract/abstractUserController');
-const conn = require('@config/conn');
-const { User } = require('@models')(conn);
+const conn = require("@config/conn");
+const { User } = require("@models")(conn);
+const {
+	verifyTokenMiddleware,
+	checkRolesMiddleware
+} = require("@middlewares/auth");
+const { statusCodeMessage } = require("@utils");
 
-const abstractUserController = createAbstractUserController(User);
+const { USER_ROLES } = require("@constants/roles");
+const createAbstractUserController = require("@controllers/abstract/abstractUserController");
+const userService = require("@services/userService");
 
-router.use('/', abstractUserController);
+const abstractUserController = createAbstractUserController(User, [
+	USER_ROLES[1]
+]);
+
+router.use("/", abstractUserController);
+
+router.get(
+	"/projects",
+	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[1]])],
+	async (req, res) => {
+		try {
+			const answer = await userService.getMyProjects(req.user.id);
+			return res.send(answer);
+		} catch (error) {
+			console.log("userProjectsError", error);
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
 
 module.exports = router;

@@ -23,9 +23,9 @@ module.exports = {
 		UPDATE_FIELDS: "At least one field must be provided for the update",
 		UNKNOWN_USER: "No matching user found",
 		ASSIGN_USERS_TO_PROJECT:
-			"Only associated manager or admins can assign users to project",
+			"Only associated manager can assign users to project",
 		UNASSIGN_USERS:
-			"Only associated manager or admins can unassign users from project"
+			"Only associated manager can unassign users from project"
 	},
 	SUCCESS: {
 		PASSWORD_UPDATED: "Password was successfully updated",

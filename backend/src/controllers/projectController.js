@@ -20,7 +20,6 @@ const projectDeleteService = require("@services/abstractDeleteService")(
 	Project
 );
 
-
 const projectService = require("@services/projectService");
 
 router.post(
@@ -93,7 +92,6 @@ router.delete(
 	"/:id",
 	[verifyTokenMiddleware("access"), checkRolesMiddleware(ADMIN_ROLES)],
 	async (req, res) => {
-		
 		try {
 			const answer = await projectDeleteService.delete(req.params.id);
 			return res.send(answer);
@@ -121,41 +119,5 @@ router.get(
 	}
 );
 
-router.post(
-	"/assign-users/:id",
-	[
-		verifyTokenMiddleware("access"),
-		checkRolesMiddleware([...ADMIN_ROLES, USER_ROLES[0]])
-	],
-	async (req, res) => {
-		try {
-			const { idArray } = req.body;
-			const answer = await projectService.assignUsers(req.user, req.params.id, idArray);
-			return res.send(answer);
-		} catch (error) {
-			const { status, message } = statusCodeMessage(error);
-			return res.status(status).send({ message });
-		}
-	}
-);
-
-
-router.delete(
-	"/unassign-users/:id",
-	[
-		verifyTokenMiddleware("access"),
-		checkRolesMiddleware([...ADMIN_ROLES, USER_ROLES[0]])
-	],
-	async (req, res) => {
-		try {
-			const { idArray } = req.body;
-			const answer = await projectService.unassign(req.user, req.params.id, idArray);
-			return res.send(answer);
-		} catch (error) {
-			const { status, message } = statusCodeMessage(error);
-			return res.status(status).send({ message });
-		}
-	}
-);
 
 module.exports = router;

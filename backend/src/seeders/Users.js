@@ -1,33 +1,43 @@
-const faker = require('faker');
-const bcrypt = require('bcrypt');
+const faker = require("faker");
+const bcrypt = require("bcrypt");
+const { MAX_MANAGER_INDEX } = require("./constants");
 
 module.exports = (conn) => {
-  const queryInterface = conn.getQueryInterface();
-  return {
-    up: async (amount) => {
-      const [results] = await queryInterface.sequelize.query("SELECT * FROM users;");
-      if (results.length < amount) {
-        const usersToSeed = Math.abs(amount - results.length);
-        const users = [...Array(usersToSeed)].map((_, index) => {
-          const name = faker.name.firstName();
-          const surname = faker.name.lastName();
-          const role = index <= 10 ? 'MANAGER' : 'USER'; 
+	const queryInterface = conn.getQueryInterface();
+	return {
+		up: async (amount) => {
+			const [[result]] = await queryInterface.sequelize.query(
+				"SELECT COUNT (id) FROM users;"
+			);
+			const { count: total } = result;
 
-          return {
-            name,
-            surname,
-            role,
-            email: faker.internet.email(name, surname).toLowerCase(),
-            password: bcrypt.hashSync('password123', parseInt(process.env.PASSWORD_SALT_ROUNDS)),
-          }
-        });
-        console.log("Successfully executed users seeder");
-        return queryInterface.bulkInsert('users', users, {});
-      }
-      return;
-    },
-    down: () => {
-      return queryInterface.bulkDelete('users', null, {});
-    },
-  }
+			if (total < amount) {
+				const usersToSeed = Math.abs(amount - total);
+				const users = [...Array(usersToSeed)].map((_, index) => {
+					const name = faker.name.firstName();
+					const surname = faker.name.lastName();
+					const role = index < MAX_MANAGER_INDEX ? "MANAGER" : "USER";
+					const lastLogin = faker.time.recent("unix");
+
+					return {
+						name,
+						surname,
+						role,
+						email: faker.internet.email(name, surname).toLowerCase(),
+						password: bcrypt.hashSync(
+							"password123",
+							parseInt(process.env.PASSWORD_SALT_ROUNDS)
+						),
+						lastLogin
+					};
+				});
+				console.log("Successfully executed users seeder");
+				return queryInterface.bulkInsert("users", users, {});
+			}
+			return;
+		},
+		down: () => {
+			return queryInterface.bulkDelete("users", null, {});
+		}
+	};
 };

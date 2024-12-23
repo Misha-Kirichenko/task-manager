@@ -54,6 +54,12 @@ module.exports = (conn) => {
 						}
 					);
 
+					await queryInterface.addIndex("user_projects", ["projectId"], {
+						unique: false,
+						using: "HASH",
+						transaction
+					});
+
 					console.log(MESSAGE_UTIL.SUCCESS.MIGRATION("user_projects"));
 				}
 				await transaction.commit();
