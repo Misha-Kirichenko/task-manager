@@ -1,10 +1,10 @@
 const conn = require("@config/conn");
 const { QueryTypes } = require("sequelize");
-const { USER_ROLES } = require("@constants/roles");
-const { SQL_ASSIGN_USERS } = require("@constants/sql");
+const { SQL_USERS_WITH_ASSIGNED_FLAG } = require("@constants/sql");
 const MESSAGES = require("@constants/messages");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
-const { Project, UserProjects } = require("@models")(conn);
+const { USER_ROLES } = require("@constants/roles");
+const { Project, User, UserProjects } = require("@models")(conn);
 
 exports.getMyProjects = async (userId) => {
 	const projectList = await Project.findAll({
@@ -15,17 +15,28 @@ exports.getMyProjects = async (userId) => {
 	return projectList;
 };
 
-
-exports.getProjectUsers = async (projectId, userId) => {
-	const projectList = await Project.findAll({
-		where: { managerId: userId },
-		attributes: [["id", "projectId"], "projectName", "startDate"],
-		order: [["startDate", "DESC"]]
+exports.getProjectUsers = async (projectId, managerId) => {
+	const projectExists = await Project.count({
+		where: { id: projectId, managerId }
 	});
-	return projectList;
+
+	if (!projectExists) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Project")
+		);
+		throw notFoundException;
+	}
+
+	const users = await conn.query(SQL_USERS_WITH_ASSIGNED_FLAG, {
+		bind: [projectId],
+		type: QueryTypes.SELECT
+	});
+
+	return users;
 };
 
-exports.assignUsers = async (managerId, projectId, idArray) => {
+exports.toggleUsers = async (managerId, projectId, idArray = []) => {
 	const foundProject = await Project.findByPk(projectId, {
 		attributes: ["id", "managerId"]
 	});
@@ -46,63 +57,36 @@ exports.assignUsers = async (managerId, projectId, idArray) => {
 		throw unprocessableException;
 	}
 
-	const [_, rowCount] = await conn.query(SQL_ASSIGN_USERS, {
-		bind: [projectId, idArray, USER_ROLES[0]],
-		type: QueryTypes.INSERT
-	});
+	const transaction = await conn.transaction();
+	
+	try {
+		await UserProjects.destroy({
+			where: { projectId },
+			transaction
+		});
 
-	if (rowCount == 0) {
-		const message = `Conflict: selected users can't be assigned to this project`;
-		const conflictException = createHttpException(409, message);
-		throw conflictException;
-	}
+		if (idArray.length) {
+			const foundUsers = await User.findAll(
+				{
+					where: { id: idArray, role: USER_ROLES[1] }
+				},
+				{ attributes: ["id"] }
+			);
 
-	if (rowCount < idArray.length) {
-		const message = `Operation partially successful: ${rowCount} of ${idArray.length} users were assigned to this project.`;
-		const partialInsertException = createHttpException(207, message);
-		throw partialInsertException;
-	}
+			if (foundUsers.length) {
+				const userProjects = foundUsers.map((user) => ({
+					userId: user.id,
+					projectId
+				}));
 
-	const message = `Operation successful: ${rowCount} users were assigned to this project`;
-	return { message };
-};
-
-exports.unassign = async (managerId, projectId, idArray) => {
-	const foundProject = await Project.findByPk(projectId, {
-		attributes: ["id", "managerId"]
-	});
-
-	if (!foundProject) {
-		const notFoundException = createHttpException(
-			404,
-			MESSAGE_UTIL.ERRORS.NOT_FOUND("Project")
-		);
-		throw notFoundException;
-	}
-
-	if (foundProject.managerId !== managerId) {
-		const unprocessableException = createHttpException(
-			422,
-			MESSAGES.ERRORS.UNASSIGN_USERS
-		);
-		throw unprocessableException;
-	}
-
-	const totalUnassigned = await UserProjects.destroy({
-		where: {
-			projectId,
-			userId: {
-				[Op.in]: idArray
+				await UserProjects.bulkCreate(userProjects, { transaction });
 			}
 		}
-	});
 
-	if (totalUnassigned == 0) {
-		const message = `Conflict: selected users are not assigned to this project, so they can't be unassigned`;
-		const conflictException = createHttpException(409, message);
-		throw conflictException;
+		await transaction.commit();
+		return { message: `Operation was successful!` };
+	} catch (error) {
+		await transaction.rollback();
+		throw error;
 	}
-
-	const message = `Operation successful: ${totalUnassigned} users unassigned from this project`;
-	return { message };
 };

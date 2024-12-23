@@ -23,12 +23,13 @@ router.get(
 	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[0]])],
 	async (req, res) => {
 		try {
-			const answer = await managerService.geProjectUsers(
+			const answer = await managerService.getProjectUsers(
 				req.params.id,
 				req.user.id
 			);
 			return res.send(answer);
 		} catch (error) {
+			console.log("project users error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}
@@ -50,38 +51,20 @@ router.get(
 	}
 );
 
-router.post(
-	"/projects/assign/:id",
+router.put(
+	"/projects/users/toggle/:id",
 	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[0]])],
 	async (req, res) => {
 		try {
 			const { idArray } = req.body;
-			const answer = await managerService.assignUsers(
+			const answer = await managerService.toggleUsers(
 				req.user.id,
 				req.params.id,
 				idArray
 			);
 			return res.send(answer);
 		} catch (error) {
-			const { status, message } = statusCodeMessage(error);
-			return res.status(status).send({ message });
-		}
-	}
-);
-
-router.delete(
-	"/projects/unassign/:id",
-	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[0]])],
-	async (req, res) => {
-		try {
-			const { idArray } = req.body;
-			const answer = await managerService.unassign(
-				req.user.id,
-				req.params.id,
-				idArray
-			);
-			return res.send(answer);
-		} catch (error) {
+			console.log("toggle error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}
