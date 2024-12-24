@@ -26,7 +26,6 @@ router.get(
 			const answer = await userService.getMyProjects(req.user.id);
 			return res.send(answer);
 		} catch (error) {
-			console.log("userProjectsError", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}

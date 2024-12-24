@@ -1,5 +1,5 @@
 const conn = require("@config/conn");
-const { Op, QueryTypes } = require("sequelize");
+const { Sequelize, Op, QueryTypes } = require("sequelize");
 const { SQL_USERS_WITH_ASSIGNED_FLAG } = require("@constants/sql");
 const MESSAGES = require("@constants/messages");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
@@ -16,6 +16,10 @@ exports.getMyProjects = async (userId, status) => {
 		throw unprocessableException;
 	}
 
+	const USERS_EMPLOYED_QUERY = Sequelize.literal(
+		`CAST((SELECT COUNT(*) FROM "user_projects" WHERE "user_projects"."projectId" = "project"."id") AS INTEGER)`
+	);
+
 	const projectList = await Project.findAll({
 		where: {
 			managerId: userId,
@@ -23,7 +27,13 @@ exports.getMyProjects = async (userId, status) => {
 				? { endDate: 0 }
 				: { endDate: { [Op.gt]: 0 } })
 		},
-		attributes: [["id", "projectId"], "projectName", "startDate", "endDate"],
+		attributes: [
+			["id", "projectId"],
+			"projectName",
+			"startDate",
+			"endDate",
+			[USERS_EMPLOYED_QUERY, "usersEmployed"]
+		],
 		order: [
 			...(status === PROJECT_STATUS[0]
 				? [["startDate", "DESC"]]
@@ -78,7 +88,7 @@ exports.toggleUsers = async (managerId, projectId, idArray = []) => {
 		throw unprocessableException;
 	}
 
-	if (foundProject.endDate) {
+	if (Number(foundProject.endDate)) {
 		const unprocessableException = createHttpException(
 			422,
 			MESSAGES.ERRORS.TOGGLE_ON_ACTIVE
