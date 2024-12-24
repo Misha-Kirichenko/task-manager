@@ -5,6 +5,7 @@ const MESSAGES = require("@constants/messages");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
 const { USER_ROLES } = require("@constants/roles");
 const { PROJECT_STATUS } = require("@constants/projectStatus");
+const { SQL_USERS_EMPLOYED_QUERY } = require("@constants/sql");
 const { Project, User, UserProjects } = require("@models")(conn);
 
 exports.getMyProjects = async (userId, status) => {
@@ -16,9 +17,7 @@ exports.getMyProjects = async (userId, status) => {
 		throw unprocessableException;
 	}
 
-	const USERS_EMPLOYED_QUERY = Sequelize.literal(
-		`CAST((SELECT COUNT(*) FROM "user_projects" WHERE "user_projects"."projectId" = "project"."id") AS INTEGER)`
-	);
+	const USERS_EMPLOYED_QUERY = Sequelize.literal(SQL_USERS_EMPLOYED_QUERY);
 
 	const projectList = await Project.findAll({
 		where: {
@@ -88,7 +87,7 @@ exports.toggleUsers = async (managerId, projectId, idArray = []) => {
 		throw unprocessableException;
 	}
 
-	if (Number(foundProject.endDate)) {
+	if (foundProject.endDate) {
 		const unprocessableException = createHttpException(
 			422,
 			MESSAGES.ERRORS.TOGGLE_ON_ACTIVE
@@ -123,9 +122,27 @@ exports.toggleUsers = async (managerId, projectId, idArray = []) => {
 		}
 
 		await transaction.commit();
-		return { message: `Operation was successful!` };
+		return { message: MESSAGES.SUCESS.OP_SUCCESS };
 	} catch (error) {
 		await transaction.rollback();
 		throw error;
 	}
+};
+
+exports.getProject = async (projectId, managerId) => {
+	const foundProject = await Project.findOne({
+		where: { id: projectId, managerId },
+		attributes: { exclude: ["managerId"] }
+	});
+
+	if (!foundProject) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Project")
+		);
+		throw notFoundException;
+	}
+
+	mutateDates(foundProject.Manager, "lastLogin");
+	return foundProject;
 };

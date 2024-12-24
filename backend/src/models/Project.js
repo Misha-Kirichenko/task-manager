@@ -28,7 +28,7 @@ module.exports = (conn) => {
 			timestamps: false,
 			hooks: {
 				beforeSave: convertToEntities,
-				afterFind: mutateDates
+				afterFind: (result) => mutateDates(result, "startDate", "endDate")
 			}
 		}
 	);

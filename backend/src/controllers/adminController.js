@@ -13,12 +13,14 @@ const {
 	changeUserRoleMiddleware,
 	abstractCreateMiddleware
 } = require("@middlewares/validation");
+const { getAllProjectsMiddleware } = require("@middlewares/validation/admin");
 const {
 	abstractUpdateValidateSchema,
 	abstractCreateValidateSchema
 } = require("@middlewares/validation/schemas");
 const { statusCodeMessage } = require("@utils");
 const adminService = require("@services/adminService");
+const projectService = require("@services/projectService");
 const userDeleteService = require("@services/abstractDeleteService")(User);
 
 const abstractUserController = createAbstractUserController(Admin);
@@ -123,5 +125,41 @@ router.delete(
 	}
 );
 
+router.get(
+	"/project/:id",
+	[verifyTokenMiddleware("access"), checkRolesMiddleware(ADMIN_ROLES)],
+	async (req, res) => {
+		try {
+			const userData = { role: req.user.role, userId: req.user.id };
+			const answer = await projectService.getProject(req.params.id, userData);
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
+router.get(
+	"/projects/:status",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware(ADMIN_ROLES),
+		getAllProjectsMiddleware
+	],
+	async (req, res) => {
+		try {
+			const answer = await projectService.getAllProjects(
+				req.params.status.toUpperCase(),
+				req.query
+			);
+			return res.send(answer);
+		} catch (error) {
+			console.log("filter error", error);
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
 
 module.exports = router;

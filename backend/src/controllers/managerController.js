@@ -10,6 +10,7 @@ const { statusCodeMessage } = require("@utils");
 
 const { USER_ROLES } = require("@constants/roles");
 const createAbstractUserController = require("@controllers/abstract/abstractUserController");
+const projectService = require("@services/projectService");
 const managerService = require("@services/managerService");
 
 const abstractUserController = createAbstractUserController(User, [
@@ -19,7 +20,22 @@ const abstractUserController = createAbstractUserController(User, [
 router.use("/", abstractUserController);
 
 router.get(
-	"/projects/users/:id",
+	"/project/:id",
+	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[0]])],
+	async (req, res) => {
+		try {
+			const userData = { userId: req.user.id, role: req.user.role };
+			const answer = await projectService.getProject(req.params.id, userData);
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
+router.get(
+	"/project/users/:id",
 	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[0]])],
 	async (req, res) => {
 		try {
@@ -53,7 +69,7 @@ router.get(
 );
 
 router.put(
-	"/projects/users/toggle/:id",
+	"/project/users/toggle/:id",
 	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[0]])],
 	async (req, res) => {
 		try {
@@ -65,7 +81,6 @@ router.put(
 			);
 			return res.send(answer);
 		} catch (error) {
-			console.log("toggle error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}

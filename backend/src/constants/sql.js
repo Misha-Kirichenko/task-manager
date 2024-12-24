@@ -27,7 +27,11 @@ const SQL_USERS_WITH_ASSIGNED_FLAG = `SELECT
 								WHERE u.role = 'USER'
 								ORDER BY assigned DESC, u."lastLogin" DESC;`;
 
+const SQL_USERS_EMPLOYED_QUERY = `CAST((SELECT COUNT(*) 
+									FROM "user_projects" 
+									WHERE "user_projects"."projectId" = "project"."id") AS INTEGER)`;
 module.exports = {
 	SQL_USER_PROJECT_LIST,
+	SQL_USERS_EMPLOYED_QUERY,
 	SQL_USERS_WITH_ASSIGNED_FLAG
 };

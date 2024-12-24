@@ -26,10 +26,12 @@ module.exports = {
 			"Only associated manager can assign users to project",
 		UNASSIGN_USERS: "Only associated manager can unassign users from project",
 		INVALID_PROJECT_STATUS: "Invalid project status",
-		TOGGLE_ON_ACTIVE: "Uses can be toggled only on active projects"
+		TOGGLE_ON_ACTIVE: "Uses can be toggled only on active projects",
+		UNACCEPTABLE: "value is unacceptable"
 	},
 	SUCCESS: {
 		PASSWORD_UPDATED: "Password was successfully updated",
-		ROLE_CHANGED: "User's role was successfully changed"
+		ROLE_CHANGED: "User's role was successfully changed",
+		OP_SUCCESS: "Operation was successful"
 	}
 };

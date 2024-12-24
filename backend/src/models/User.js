@@ -1,5 +1,5 @@
 const { Sequelize: DataTypes } = require("sequelize");
-const { modifyEmail } = require("./hooks");
+const { modifyEmail, mutateDates } = require("./hooks");
 const { USER_ROLES } = require("@constants/roles");
 
 module.exports = (conn) => {
@@ -27,7 +27,8 @@ module.exports = (conn) => {
 		{
 			timestamps: false,
 			hooks: {
-				beforeSave: modifyEmail
+				beforeSave: modifyEmail,
+				afterFind: (result) => mutateDates(result, "lastLogin")
 			},
 			defaultScope: {
 				attributes: { exclude: ["password"] }
