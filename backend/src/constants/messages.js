@@ -24,8 +24,9 @@ module.exports = {
 		UNKNOWN_USER: "No matching user found",
 		ASSIGN_USERS_TO_PROJECT:
 			"Only associated manager can assign users to project",
-		UNASSIGN_USERS:
-			"Only associated manager can unassign users from project"
+		UNASSIGN_USERS: "Only associated manager can unassign users from project",
+		INVALID_PROJECT_STATUS: "Invalid project status",
+		TOGGLE_ON_ACTIVE: "Uses can be toggled only on active projects"
 	},
 	SUCCESS: {
 		PASSWORD_UPDATED: "Password was successfully updated",

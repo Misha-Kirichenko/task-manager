@@ -1,16 +1,34 @@
 const conn = require("@config/conn");
-const { QueryTypes } = require("sequelize");
+const { Op, QueryTypes } = require("sequelize");
 const { SQL_USERS_WITH_ASSIGNED_FLAG } = require("@constants/sql");
 const MESSAGES = require("@constants/messages");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
 const { USER_ROLES } = require("@constants/roles");
+const { PROJECT_STATUS } = require("@constants/projectStatus");
 const { Project, User, UserProjects } = require("@models")(conn);
 
-exports.getMyProjects = async (userId) => {
+exports.getMyProjects = async (userId, status) => {
+	if (!PROJECT_STATUS.includes(status)) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.INVALID_PROJECT_STATUS
+		);
+		throw unprocessableException;
+	}
+
 	const projectList = await Project.findAll({
-		where: { managerId: userId },
-		attributes: [["id", "projectId"], "projectName", "startDate"],
-		order: [["startDate", "DESC"]]
+		where: {
+			managerId: userId,
+			...(status === PROJECT_STATUS[0]
+				? { endDate: 0 }
+				: { endDate: { [Op.gt]: 0 } })
+		},
+		attributes: [["id", "projectId"], "projectName", "startDate", "endDate"],
+		order: [
+			...(status === PROJECT_STATUS[0]
+				? [["startDate", "DESC"]]
+				: [["endDate", "DESC"]])
+		]
 	});
 	return projectList;
 };
@@ -37,9 +55,12 @@ exports.getProjectUsers = async (projectId, managerId) => {
 };
 
 exports.toggleUsers = async (managerId, projectId, idArray = []) => {
-	const foundProject = await Project.findByPk(projectId, {
-		attributes: ["id", "managerId"]
-	});
+	const foundProject = await Project.findOne(
+		{ where: { id: projectId } },
+		{
+			attributes: ["id", "managerId", "endDate"]
+		}
+	);
 
 	if (!foundProject) {
 		const notFoundException = createHttpException(
@@ -57,8 +78,16 @@ exports.toggleUsers = async (managerId, projectId, idArray = []) => {
 		throw unprocessableException;
 	}
 
+	if (foundProject.endDate) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.TOGGLE_ON_ACTIVE
+		);
+		throw unprocessableException;
+	}
+
 	const transaction = await conn.transaction();
-	
+
 	try {
 		await UserProjects.destroy({
 			where: { projectId },

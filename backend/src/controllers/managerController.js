@@ -29,7 +29,6 @@ router.get(
 			);
 			return res.send(answer);
 		} catch (error) {
-			console.log("project users error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}
@@ -37,14 +36,16 @@ router.get(
 );
 
 router.get(
-	"/projects",
+	"/projects/:status",
 	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[0]])],
 	async (req, res) => {
 		try {
-			const answer = await managerService.getMyProjects(req.user.id);
+			const answer = await managerService.getMyProjects(
+				req.user.id,
+				req.params.status.toUpperCase()
+			);
 			return res.send(answer);
 		} catch (error) {
-			console.log("managerProjectsError", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}

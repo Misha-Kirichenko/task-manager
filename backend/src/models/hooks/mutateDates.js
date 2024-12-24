@@ -18,13 +18,9 @@ const mutateDates = (result) => {
 		}
 		const startDate = Number(project.startDate);
 		const endDate = Number(project.endDate);
-		if (startDate) {
-			project.startDate = getSeparateDateKeys(startDate);
-		}
 
-		if (endDate) {
-			project.endDate = getSeparateDateKeys(endDate);
-		}
+		project.startDate = startDate ? getSeparateDateKeys(startDate) : 0;
+		project.endDate = endDate ? getSeparateDateKeys(endDate) : 0;
 	}
 };
 
