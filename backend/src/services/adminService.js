@@ -1,8 +1,9 @@
 const bcrypt = require("bcrypt");
 const conn = require("@config/conn");
-const { User, Project } = require("@models")(conn);
+const { User } = require("@models")(conn);
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
 const MESSAGES = require("@constants/messages");
+const { USER_ROLES } = require("@constants/roles");
 
 exports.changeUserRole = async (id, role) => {
 	const foundUser = await User.findByPk(id, {
@@ -62,4 +63,34 @@ exports.createUser = async (body) => {
 	);
 	await User.create({ ...body, password: hashedPassword });
 	return { message: MESSAGE_UTIL.SUCCESS.CREATED("User") };
+};
+
+exports.getUser = async (id) => {
+	const foundUser = await User.findByPk(id);
+
+	if (!foundUser) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("User")
+		);
+		throw notFoundException;
+	}
+
+	return foundUser;
+};
+
+exports.getAllUsers = async (role) => {
+	if (!USER_ROLES.includes(role)) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGE_UTIL.ERRORS.INVALID_FIELD(
+				"role",
+				`one of: ${USER_ROLES.join(",")}`
+			)
+		);
+		throw unprocessableException;
+	}
+
+	const foundUsers = await User.findAll({ where: { role } });
+	return foundUsers;
 };

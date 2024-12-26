@@ -119,5 +119,51 @@ router.get(
 	}
 );
 
+router.get(
+	"/users/:id",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware([...ADMIN_ROLES, USER_ROLES[0]])
+	],
+	async (req, res) => {
+		try {
+			const { id, role } = req.user;
+			const answer = await projectService.getProjectUsers(
+				req.params.id,
+				role === USER_ROLES[0] ? id : null
+			);
+
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
+router.put(
+	"/users/toggle/:id",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware([...ADMIN_ROLES, USER_ROLES[0]])
+	],
+	async (req, res) => {
+		try {
+			const { idArray = [] } = req.body;
+			const { id, role } = req.user;
+
+			const answer = await projectService.toggleUsers(
+				req.params.id,
+				idArray,
+				role === USER_ROLES[0] ? id : null
+			);
+
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
 
 module.exports = router;

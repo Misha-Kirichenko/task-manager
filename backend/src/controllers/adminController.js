@@ -126,12 +126,17 @@ router.delete(
 );
 
 router.get(
-	"/project/:id",
-	[verifyTokenMiddleware("access"), checkRolesMiddleware(ADMIN_ROLES)],
+	"/users/:role",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware(ADMIN_ROLES),
+		getAllProjectsMiddleware
+	],
 	async (req, res) => {
 		try {
-			const userData = { role: req.user.role, userId: req.user.id };
-			const answer = await projectService.getProject(req.params.id, userData);
+			const answer = await adminService.getAllUsers(
+				req.params.role.toUpperCase()
+			);
 			return res.send(answer);
 		} catch (error) {
 			const { status, message } = statusCodeMessage(error);
@@ -155,7 +160,25 @@ router.get(
 			);
 			return res.send(answer);
 		} catch (error) {
-			console.log("filter error", error);
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
+router.get(
+	"/project/:id",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware(ADMIN_ROLES),
+		getAllProjectsMiddleware
+	],
+	async (req, res) => {
+		try {
+			const answer = await projectService.getProject(req.params.id);
+			return res.send(answer);
+		} catch (error) {
+			console.log("get project error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}

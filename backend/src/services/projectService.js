@@ -1,53 +1,57 @@
+const { QueryTypes } = require("sequelize");
 const conn = require("@config/conn");
-const { Sequelize, Op } = require("sequelize");
 const { Project, User, UserProjects } = require("@models")(conn);
+const { SQL_USERS_WITH_ASSIGNED_FLAG } = require("@constants/sql");
 const { USER_ROLES, ADMIN_ROLES } = require("@constants/roles");
 const MESSAGES = require("@constants/messages");
 const { PROJECT_STATUS } = require("@constants/projectStatus");
-const { SQL_USERS_EMPLOYED_QUERY } = require("@constants/sql");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
 const { mutateDates } = require("@models/hooks");
+const { getProjectsQueryPipe } = require("./pipes");
 
-exports.getProject = async (projectId, { role, userId }) => {
-	const whereClause = {
-		id: projectId,
-		...(!ADMIN_ROLES.includes(role) &&
-			role === USER_ROLES[0] && { managerId: userId })
-	};
-
-	const includeClause = [
-		...(ADMIN_ROLES.includes(role) || role === USER_ROLES[1]
-			? [
-					{
-						model: User,
-						as: "Manager",
-						attributes: { exclude: ["role", "password"] }
-					}
-			  ]
-			: [])
-	];
-
-	if (role === USER_ROLES[1]) {
-		const userProjectExists = await UserProjects.count({
-			where: {
-				userId,
-				projectId
-			}
-		});
-
-		if (!userProjectExists) {
-			const notFoundException = createHttpException(
-				404,
-				MESSAGE_UTIL.ERRORS.NOT_FOUND("Project")
-			);
-			throw notFoundException;
-		}
+exports.getAllProjects = async (status, query) => {
+	if (!PROJECT_STATUS.includes(status)) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.INVALID_PROJECT_STATUS
+		);
+		throw unprocessableException;
 	}
 
-	const foundProject = await Project.findOne({
-		where: whereClause,
+	let foundProjectsPlain = [];
+	const foundProjects = await Project.findAndCountAll(
+		getProjectsQueryPipe(status, query)
+	);
+
+	const { count: total } = foundProjects;
+
+	if (foundProjects.rows.length) {
+		foundProjectsPlain = foundProjects.rows.map((project) => {
+			const plainProject = project.get({ plain: true });
+			return {
+				projectId: plainProject.id,
+				projectName: plainProject.projectName,
+				startDate: plainProject.startDate,
+				endDate: plainProject.endDate,
+				usersEmployed: plainProject.usersEmployed,
+				manager: plainProject.Manager.manager
+			};
+		});
+	}
+
+	return { data: foundProjectsPlain, total };
+};
+
+exports.getProject = async (id) => {
+	const foundProject = await Project.findByPk(id, {
 		attributes: { exclude: ["managerId"] },
-		...(includeClause.length && { include: includeClause })
+		include: [
+			{
+				model: User,
+				as: "Manager",
+				attributes: { exclude: ["role", "password"] }
+			}
+		]
 	});
 
 	if (!foundProject) {
@@ -58,80 +62,13 @@ exports.getProject = async (projectId, { role, userId }) => {
 		throw notFoundException;
 	}
 
-	if (foundProject.Manager) {
-		mutateDates(foundProject.Manager, "lastLogin");
+	const plainFoundProject = foundProject.get({ plain: true });
+
+	if (plainFoundProject.Manager) {
+		mutateDates(plainFoundProject.Manager, "lastLogin");
 	}
 
-	return foundProject;
-};
-
-exports.getAllProjects = async (status, query) => {
-	const DEFAULT_PAGE_SIZE = 10;
-	if (!PROJECT_STATUS.includes(status)) {
-		const unprocessableException = createHttpException(
-			422,
-			MESSAGES.ERRORS.INVALID_PROJECT_STATUS
-		);
-		throw unprocessableException;
-	}
-
-	let {
-		page = 1,
-		limit = DEFAULT_PAGE_SIZE,
-		managerId,
-		dateFrom = new Date(0).getTime(),
-		dateTo = new Date(Date.now()).setHours(23, 59, 59),
-		search = "",
-		orderBy = status === PROJECT_STATUS[0] ? "startDate" : "endDate",
-		orderDir = "DESC"
-	} = query;
-
-	const USERS_EMPLOYED_QUERY = Sequelize.literal(SQL_USERS_EMPLOYED_QUERY);
-
-	const foundProjects = await Project.findAndCountAll({
-		where: {
-			...(managerId && { managerId }),
-			[Op.or]: [
-				{
-					projectName: {
-						[Op.iLike]: `%${search}%`
-					}
-				},
-				{
-					projectDescription: {
-						[Op.iLike]: `%${search}%`
-					}
-				}
-			],
-			startDate: { [Op.gte]: dateFrom, [Op.lte]: dateTo },
-			endDate:
-				status === PROJECT_STATUS[0] ? 0 : { [Op.gt]: 0, [Op.lte]: dateTo }
-		},
-		include: [
-			{
-				model: User,
-				as: "Manager",
-				attributes: { exclude: ["role", "password"] }
-			}
-		],
-		offset: (page - 1) * limit,
-		limit,
-		order: [[orderBy, orderDir]],
-		attributes: {
-			exclude: ["managerId", "projectDescription"],
-			include: [[USERS_EMPLOYED_QUERY, "usersEmployed"]]
-		}
-	});
-
-	if (foundProjects.rows.length) {
-		foundProjects.rows.forEach((project) => {
-			if (project.Manager) {
-				mutateDates(project.Manager, "lastLogin");
-			}
-		});
-	}
-
-	return { data: foundProjects.rows, total: foundProjects.count };
+	return plainFoundProject;
 };
 
 exports.createProject = async (body) => {
@@ -229,4 +166,95 @@ exports.toggle = async (userData, id) => {
 	await foundProject.save();
 
 	return { endDate: endDateState };
+};
+
+exports.toggleUsers = async (projectId, idArray = [], managerId = null) => {
+	const foundProject = await Project.findOne(
+		{ where: { id: projectId } },
+		{
+			attributes: ["id", "managerId", "endDate"]
+		}
+	);
+
+	if (!foundProject) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Project")
+		);
+		throw notFoundException;
+	}
+
+	if (managerId && foundProject.managerId !== managerId) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.ASSIGN_USERS_TO_PROJECT
+		);
+		throw unprocessableException;
+	}
+
+	if (foundProject.endDate) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.TOGGLE_ON_ACTIVE
+		);
+
+		throw unprocessableException;
+	}
+
+	const transaction = await conn.transaction();
+
+	try {
+		await UserProjects.destroy({
+			where: { projectId },
+			transaction
+		});
+
+		if (idArray.length) {
+			const foundUsers = await User.findAll(
+				{
+					where: { id: idArray, role: USER_ROLES[1] }
+				},
+				{ attributes: ["id"] }
+			);
+
+			if (foundUsers.length) {
+				const userProjects = foundUsers.map((user) => ({
+					userId: user.id,
+					projectId
+				}));
+
+				await UserProjects.bulkCreate(userProjects, { transaction });
+			}
+		}
+
+		await transaction.commit();
+		return { message: MESSAGES.SUCCESS.OP_SUCCESS };
+	} catch (error) {
+		await transaction.rollback();
+		throw error;
+	}
+};
+
+exports.getProjectUsers = async (projectId, managerId = null) => {
+	const searchObj = {
+		id: projectId,
+		...(managerId && { managerId })
+	};
+
+	const projectExists = await Project.count(searchObj);
+
+	if (!projectExists) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Project")
+		);
+		throw notFoundException;
+	}
+
+	const users = await conn.query(SQL_USERS_WITH_ASSIGNED_FLAG, {
+		bind: [projectId],
+		type: QueryTypes.SELECT
+	});
+
+	return users;
 };

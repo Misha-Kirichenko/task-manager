@@ -30,6 +30,8 @@ const SQL_USERS_WITH_ASSIGNED_FLAG = `SELECT
 const SQL_USERS_EMPLOYED_QUERY = `CAST((SELECT COUNT(*) 
 									FROM "user_projects" 
 									WHERE "user_projects"."projectId" = "project"."id") AS INTEGER)`;
+
+
 module.exports = {
 	SQL_USER_PROJECT_LIST,
 	SQL_USERS_EMPLOYED_QUERY,
