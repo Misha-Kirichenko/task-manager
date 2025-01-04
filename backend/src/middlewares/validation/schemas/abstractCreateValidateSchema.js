@@ -3,19 +3,21 @@ const { validateWithModelFields, MESSAGE_UTIL } = require("@utils");
 
 const abstractCreateValidateSchema = (Model, excludeFields = []) => (req, res, next) => {
   try {
-    const { body } = req;
     const errors = {};
 
     const { rawAttributes: modelAttributes } = Model;
     delete modelAttributes.id;
 
+    const passedFieldsCopy = {...req.body};
+
     if(excludeFields.length){
       for(const field of excludeFields){
-        delete req.body[field];
+        delete passedFieldsCopy[field];
+        delete modelAttributes[field];
       }
     }
 
-    for (const field in body) {
+    for (const field in passedFieldsCopy) {
       if (!modelAttributes[field]) {
         return res.status(400).send({ message: MESSAGE_UTIL.ERRORS.UNACCEPTABLE(field) });
       }
@@ -23,20 +25,17 @@ const abstractCreateValidateSchema = (Model, excludeFields = []) => (req, res, n
 
     for (const field in modelAttributes) {
       const { type, allowNull } = modelAttributes[field];
-
+      
       if (!modelAttributes[field].hasOwnProperty("defaultValue") && !allowNull) {
-        if (!body.hasOwnProperty(field)) {
+        if (!passedFieldsCopy.hasOwnProperty(field)) {
           errors[field] = [MESSAGE_UTIL.ERRORS.REQUIRED(field)];
-        }
-        else if (!body[field]) {
+        } else if (!passedFieldsCopy[field]) {
           errors[field] = [MESSAGE_UTIL.ERRORS.NO_VALUE(field)];
-        }
-        else if (!validateWithModelFields(body[field], type)) {
+        } else if (!validateWithModelFields(passedFieldsCopy[field], type)) {
           errors[field] = [MESSAGE_UTIL.ERRORS.INVALID_TYPE(field, type)];
         }
-      }
-      else {
-        if (body.hasOwnProperty(field) && !validateWithModelFields(body[field], type)) {
+      } else {
+        if (passedFieldsCopy.hasOwnProperty(field) && !validateWithModelFields(passedFieldsCopy[field], type)) {
           errors[field] = [MESSAGE_UTIL.ERRORS.INVALID_TYPE(field, type)];
         }
       }
@@ -45,7 +44,7 @@ const abstractCreateValidateSchema = (Model, excludeFields = []) => (req, res, n
     req.errors = errors;
 
     return next();
-  } catch (err) {
+  } catch (error) {
     return res.status(500).json({ message: ERRORS.INTERNAL_SERVER_ERROR });
   }
 

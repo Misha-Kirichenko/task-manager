@@ -1,8 +1,8 @@
 const he = require("he");
 
-const convertToEntities = (project) => {
-	if (project.projectDescription) {
-		project.projectDescription = he.encode(project.projectDescription);
+const convertToEntities = (result, key) => {
+	if (result[key]) {
+		result[key] = he.encode(result[key]);
 	}
 };
 

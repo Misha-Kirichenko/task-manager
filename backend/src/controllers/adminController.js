@@ -178,7 +178,6 @@ router.get(
 			const answer = await projectService.getProject(req.params.id);
 			return res.send(answer);
 		} catch (error) {
-			console.log("get project error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}

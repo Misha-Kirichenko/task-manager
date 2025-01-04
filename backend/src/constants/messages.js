@@ -24,10 +24,18 @@ module.exports = {
 		UNKNOWN_USER: "No matching user found",
 		ASSIGN_USERS_TO_PROJECT:
 			"Only associated manager can assign users to project",
+		ASSIGN_TASK_TO_PROJECT:
+			"Only associated manager can assign task to project",
 		UNASSIGN_USERS: "Only associated manager can unassign users from project",
 		INVALID_PROJECT_STATUS: "Invalid project status",
+		INVALID_TASK_STATUS: "Invalid task status",
 		TOGGLE_ON_ACTIVE: "Uses can be toggled only on active projects",
-		UNACCEPTABLE: "value is unacceptable"
+		UNACCEPTABLE: "value is unacceptable",
+		NO_TOGGLE_ON_COMPLETED_PROJECT:
+			"You can't toggle task if associated project is completed",
+		ASSOC_MANAGER_TOGGLE_TASK:
+			"Only associated manager or admin can toggle task",
+		HAS_ACTIVE_TASKS: "Can't finish project that has active tasks"
 	},
 	SUCCESS: {
 		PASSWORD_UPDATED: "Password was successfully updated",

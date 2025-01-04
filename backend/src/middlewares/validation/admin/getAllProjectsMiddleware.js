@@ -86,12 +86,11 @@ const getAllProjectsMiddleware = (req, res, next) => {
 			: null;
 
 		req.query.dateTo
-			? (req.query.dateTo = new Date(dateTo).setHours(0, 0, 0, 0))
+			? (req.query.dateTo = new Date(dateTo).setHours(23, 59, 59, 999))
 			: null;
 
 		return next();
 	} catch (err) {
-		console.log("validEror", err);
 		return res
 			.status(500)
 			.json({ message: MESSAGES.ERRORS.INTERNAL_SERVER_ERROR });

@@ -10,6 +10,7 @@ const usersMigration = require("./Users")(conn);
 const adminsMigration = require("./Admins")(conn);
 const projectsMigration = require("./Projects")(conn);
 const userProjects = require("./UserProjects")(conn);
+const tasks = require("./Tasks")(conn);
 
 (async () => {
 	try {
@@ -17,6 +18,7 @@ const userProjects = require("./UserProjects")(conn);
 		await adminsMigration.up();
 		await projectsMigration.up();
 		await userProjects.up();
+		await tasks.up();
 	} catch (error) {
 		console.error("migrations error:", error);
 	}

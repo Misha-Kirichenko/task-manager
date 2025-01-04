@@ -21,6 +21,7 @@ const projectDeleteService = require("@services/abstractDeleteService")(
 );
 
 const projectService = require("@services/projectService");
+const taskService = require("@services/taskService");
 
 router.post(
 	"/",
@@ -113,6 +114,7 @@ router.get(
 			const answer = await projectService.toggle(req.user, req.params.id);
 			return res.send(answer);
 		} catch (error) {
+			console.log("project toggle error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}
@@ -156,6 +158,29 @@ router.put(
 				req.params.id,
 				idArray,
 				role === USER_ROLES[0] ? id : null
+			);
+
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
+router.get(
+	"/tasks/:status/:id",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware([...ADMIN_ROLES, USER_ROLES[0]])
+	],
+	async (req, res) => {
+		try {
+			const managerId = req.user.role === USER_ROLES[0] ? req.user.id : null;
+			const answer = await taskService.getProjectTasks(
+				req.params.status.toUpperCase(),
+				req.params.id,
+				managerId
 			);
 
 			return res.send(answer);

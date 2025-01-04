@@ -2,7 +2,7 @@ const conn = require("@config/conn");
 const { Sequelize, Op } = require("sequelize");
 const MESSAGES = require("@constants/messages");
 const { createHttpException } = require("@utils");
-const { PROJECT_STATUS } = require("@constants/projectStatus");
+const { STATUS } = require("@constants/status");
 const { SQL_USERS_EMPLOYED_QUERY } = require("@constants/sql");
 const { Project } = require("@models")(conn);
 
@@ -27,7 +27,7 @@ exports.getMyProject = async (projectId, managerId) => {
 };
 
 exports.getMyProjects = async (managerId, status) => {
-	if (!PROJECT_STATUS.includes(status)) {
+	if (!STATUS.includes(status)) {
 		const unprocessableException = createHttpException(
 			422,
 			MESSAGES.ERRORS.INVALID_PROJECT_STATUS
@@ -40,7 +40,7 @@ exports.getMyProjects = async (managerId, status) => {
 	const projectList = await Project.findAll({
 		where: {
 			managerId,
-			...(status === PROJECT_STATUS[0]
+			...(status === STATUS[0]
 				? { endDate: 0 }
 				: { endDate: { [Op.gt]: 0 } })
 		},
@@ -52,7 +52,7 @@ exports.getMyProjects = async (managerId, status) => {
 			[USERS_EMPLOYED_QUERY, "usersEmployed"]
 		],
 		order: [
-			...(status === PROJECT_STATUS[0]
+			...(status === STATUS[0]
 				? [["startDate", "DESC"]]
 				: [["endDate", "DESC"]])
 		]

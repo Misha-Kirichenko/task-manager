@@ -2,7 +2,7 @@ const conn = require("@config/conn");
 const { getUserProjectsQueryPipe } = require("./pipes");
 const { mutateDates } = require("@models/hooks");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
-const { UserProjects, Project, User } = require("@models")(conn);
+const { UserProjects, Project, User, Task } = require("@models")(conn);
 
 exports.getMyProject = async (projectId, userId) => {
 	const userProjectExists = await UserProjects.count({
@@ -61,4 +61,35 @@ exports.getMyProjects = async (userId) => {
 			manager: plainProject.Manager.manager
 		};
 	});
+};
+
+exports.getMyProjectTasks = async (projectId, userId) => {
+	const userProjectExists = await UserProjects.count({
+		where: {
+			userId,
+			projectId
+		}
+	});
+
+	if (!userProjectExists) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Project")
+		);
+		throw notFoundException;
+	}
+
+	const tasks = await Task.findAll({
+		where: {
+			projectId,
+			userId,
+			complete: false
+		},
+		attributes: {
+			exclude: ["projectId", "userId", "complete"]
+		},
+		order: [["createDate", "DESC"]]
+	});
+
+	return tasks;
 };

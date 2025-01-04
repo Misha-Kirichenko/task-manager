@@ -1,16 +1,16 @@
 const { QueryTypes } = require("sequelize");
 const conn = require("@config/conn");
-const { Project, User, UserProjects } = require("@models")(conn);
+const { Project, User, UserProjects, Task } = require("@models")(conn);
 const { SQL_USERS_WITH_ASSIGNED_FLAG } = require("@constants/sql");
 const { USER_ROLES, ADMIN_ROLES } = require("@constants/roles");
 const MESSAGES = require("@constants/messages");
-const { PROJECT_STATUS } = require("@constants/projectStatus");
+const { STATUS } = require("@constants/status");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
 const { mutateDates } = require("@models/hooks");
 const { getProjectsQueryPipe } = require("./pipes");
 
 exports.getAllProjects = async (status, query) => {
-	if (!PROJECT_STATUS.includes(status)) {
+	if (!STATUS.includes(status)) {
 		const unprocessableException = createHttpException(
 			422,
 			MESSAGES.ERRORS.INVALID_PROJECT_STATUS
@@ -161,9 +161,23 @@ exports.toggle = async (userData, id) => {
 	}
 
 	const endDateState = endDate ? 0 : Date.now();
-	foundProject.endDate = endDateState;
 
-	await foundProject.save();
+	if (endDateState) {
+		const projectTasks = await Task.count({
+			where: { projectId: id, complete: false }
+		});
+
+		if (projectTasks) {
+			const unprocessableException = createHttpException(
+				422,
+				MESSAGES.ERRORS.HAS_ACTIVE_TASKS
+			);
+
+			throw unprocessableException;
+		}
+	}
+
+	await Project.update({ endDate: endDateState }, { where: { id } });
 
 	return { endDate: endDateState };
 };
