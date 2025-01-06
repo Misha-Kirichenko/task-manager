@@ -1,10 +1,50 @@
+const { Op } = require("sequelize");
 const conn = require("@config/conn");
 const MESSAGES = require("@constants/messages");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
-const { USER_ROLES } = require("@constants/roles");
 const { STATUS } = require("@constants/status");
 const mutateDates = require("@models/hooks/mutateDates");
 const { User, Task, Project, UserProjects } = require("@models")(conn);
+
+const updateTaskData = async (foundRecord, taskData, projectId, managerId) => {
+	const foundProject = await Project.findByPk(projectId);
+
+	if (foundProject.endDate) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.NO_UPDATE_ON_COMPLETED_PROJECT
+		);
+		throw unprocessableException;
+	}
+
+	if (managerId && foundProject.managerId != managerId) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.ASSOC_MANAGER_UPDATE_TASK
+		);
+		throw unprocessableException;
+	}
+
+	if (taskData.userId) {
+		const foundUsersProject = await UserProjects.count({
+			where: { userId: taskData.userId, projectId }
+		});
+
+		if (!foundUsersProject) {
+			const unprocessableException = createHttpException(
+				422,
+				MESSAGES.ERRORS.UNKNOWN_USER
+			);
+			throw unprocessableException;
+		}
+	}
+
+	for (const key in taskData) {
+		foundRecord[key] = taskData[key];
+	}
+
+	await foundRecord.save();
+};
 
 exports.createTask = async (body, managerId) => {
 	const { projectId, userId } = body;
@@ -74,7 +114,7 @@ exports.getProjectTasks = async (status, id, managerId) => {
 	const tasks = await Task.findAll({
 		where: {
 			projectId: id,
-			complete: !(status === STATUS[0])
+			completeDate: status === STATUS[0] ? { [Op.eq]: 0 } : { [Op.gt]: 0 }
 		},
 		attributes: {
 			exclude: ["projectId", "userId"]
@@ -96,7 +136,7 @@ exports.getProjectTasks = async (status, id, managerId) => {
 			id: task.taskId,
 			taskName: task.taskName,
 			taskDescription: task.taskDescription,
-			complete: task.complete,
+			completeDate: task.completeDate,
 			TaskUser: plainTaskUser,
 			createDate: task.createDate,
 			deadLineDate: task.deadLineDate
@@ -105,9 +145,7 @@ exports.getProjectTasks = async (status, id, managerId) => {
 };
 
 exports.toggle = async (id, managerId) => {
-	const foundTask = await Task.findByPk(id, {
-		attributes: ["id", "projectId", "complete"]
-	});
+	const foundTask = await Task.findByPk(id);
 
 	if (!foundTask) {
 		const notFoundException = createHttpException(
@@ -117,27 +155,29 @@ exports.toggle = async (id, managerId) => {
 		throw notFoundException;
 	}
 
-	const foundProject = await Project.findByPk(foundTask.projectId, {
-		attributes: ["endDate", "managerId"]
-	});
+	const completeDateState = foundTask.completeDate ? 0 : Date.now();
 
-	if (foundProject.endDate) {
-		const unprocessableException = createHttpException(
-			422,
-			MESSAGES.ERRORS.NO_TOGGLE_ON_COMPLETED_PROJECT
+	await updateTaskData(
+		foundTask,
+		{ completeDate: completeDateState },
+		foundTask.projectId,
+		managerId
+	);
+
+	return { completeDate: completeDateState };
+};
+
+exports.updateTask = async (id, body, managerId) => {
+	const foundTask = await Task.findByPk(id);
+
+	if (!foundTask) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Task")
 		);
-		throw unprocessableException;
+		throw notFoundException;
 	}
 
-	if (managerId && foundProject.managerId != managerId) {
-		const unprocessableException = createHttpException(
-			422,
-			MESSAGES.ERRORS.ASSOC_MANAGER_TOGGLE_TASK
-		);
-		throw unprocessableException;
-	}
-
-	await Task.update({ complete: !foundTask.complete }, { where: { id } });
-
-	return { message: MESSAGE_UTIL.SUCCESS.TOGGLE_TASK(!foundTask.complete) };
+	await updateTaskData(foundTask, body, foundTask.projectId, managerId);
+	return { message: MESSAGES.SUCCESS.UPDATED_TASK };
 };

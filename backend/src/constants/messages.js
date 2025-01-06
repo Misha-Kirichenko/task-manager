@@ -31,15 +31,16 @@ module.exports = {
 		INVALID_TASK_STATUS: "Invalid task status",
 		TOGGLE_ON_ACTIVE: "Uses can be toggled only on active projects",
 		UNACCEPTABLE: "value is unacceptable",
-		NO_TOGGLE_ON_COMPLETED_PROJECT:
-			"You can't toggle task if associated project is completed",
-		ASSOC_MANAGER_TOGGLE_TASK:
-			"Only associated manager or admin can toggle task",
+		NO_UPDATE_ON_COMPLETED_PROJECT:
+			"You can't update task if associated project is completed",
+		ASSOC_MANAGER_UPDATE_TASK:
+			"Only associated manager or admin can update task",
 		HAS_ACTIVE_TASKS: "Can't finish project that has active tasks"
 	},
 	SUCCESS: {
 		PASSWORD_UPDATED: "Password was successfully updated",
 		ROLE_CHANGED: "User's role was successfully changed",
-		OP_SUCCESS: "Operation was successful"
+		OP_SUCCESS: "Operation was successful",
+		UPDATED_TASK: "Task was successfully updated"
 	}
 };

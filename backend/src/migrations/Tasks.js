@@ -37,10 +37,10 @@ module.exports = (conn) => {
 								onUpdate: "CASCADE",
 								onDelete: "CASCADE"
 							},
-							complete: {
-								type: DataTypes.BOOLEAN,
+							completeDate: {
+								type: DataTypes.BIGINT,
 								allowNull: false,
-								defaultValue: false
+								defaultValue: 0
 							},
 							projectId: {
 								type: DataTypes.INTEGER,

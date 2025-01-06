@@ -5,7 +5,7 @@ module.exports = {
 			`${field} is invalid, it must ${conditions}`,
 		REQUIRED: (field) => `${field} is required`,
 		NO_VALUE: (field) => `${field} can't be empty`,
-		INVALID_TYPE: (field, type) => `${field} must be of type ${type.key}.`,
+		INVALID_TYPE: (field, type) => `${field} must be of type ${type.key}`,
 		MUST_BE_OF_TYPE: (field, type) =>
 			`${field} has invalid type. It must be of type ${type}.`,
 		UNACCEPTABLE: (field) => `field '${field}' is unacceptable!`,
@@ -19,6 +19,6 @@ module.exports = {
 		DELETED: (data) => `${data} was successfully deleted`,
 		MIGRATION: (data) => `Successfully executed ${data} migration`,
 		TOGGLE_TASK: (status) =>
-			`Task was successfully set to ${status ? "complete" : "active"} status`
+			`Task was successfully set to ${status ? "complete" : "active"} status`,
 	}
 };

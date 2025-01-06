@@ -1,41 +1,56 @@
-const { ERRORS } = require("@constants/messages");
 const { validateWithModelFields, MESSAGE_UTIL } = require("@utils");
 
-const abstractUpdateValidateSchema = (Model, excludeFields = []) => (req, res, next) => {
-  try {
-    const { body } = req;
-    const errors = {};
+const abstractUpdateValidateSchema =
+	(Model, excludeFields = []) =>
+	(req, res, next) => {
+		try {
+			const errors = {};
 
-    const { rawAttributes: modelAttributes } = Model;
+			const { rawAttributes: modelAttributes } = Model;
 
-    if(excludeFields.length){
-      for(const field of excludeFields){
-        delete req.body[field];
-      }
-    }
+			const passedFieldsCopy = { ...req.body };
 
-    for (const field in body) {
-      if (!modelAttributes[field]) {
-        return res.status(400).send({ message: ERRORS.UNACCEPTABLE(field) });
-      }
+			if (excludeFields.length) {
+				for (const field of excludeFields) {
+					delete passedFieldsCopy[field];
+					delete modelAttributes[field];
+				}
+			}
 
-      const { type, allowNull } = modelAttributes[field];
+			for (const field in passedFieldsCopy) {
+				if (!modelAttributes[field]) {
+					return res
+						.status(400)
+						.send({ message: MESSAGE_UTIL.ERRORS.UNACCEPTABLE(field) });
+				}
 
-      if (body.hasOwnProperty(field) && !body[field] && !allowNull) {
-        errors[field] = [MESSAGE_UTIL.ERRORS.NO_VALUE(field)];
-      }
-      else if (!validateWithModelFields(body[field], type)) {
-        errors[field] = [MESSAGE_UTIL.ERRORS.INVALID_TYPE(field)];
-      }
-    }
+				const { type, allowNull } = modelAttributes[field];
 
-    req.errors = errors;
+				if (
+					passedFieldsCopy.hasOwnProperty(field) &&
+					!passedFieldsCopy[field] &&
+					!allowNull
+				) {
+					errors[field] = [MESSAGE_UTIL.ERRORS.NO_VALUE(field)];
+				} else if (
+					allowNull &&
+					!validateWithModelFields(passedFieldsCopy[field], type) &&
+					passedFieldsCopy[field] !== null
+				) {
+					errors[field] = [
+						`${MESSAGE_UTIL.ERRORS.INVALID_TYPE(field, type)}${
+							Boolean(passedFieldsCopy[field]) ? " or null" : ""
+						}`
+					];
+				}
+			}
 
-    return next();
-  } catch (err) {
-    return res.status(500).json({ message: ERRORS.INTERNAL_SERVER_ERROR });
-  }
+			req.errors = errors;
 
-};
+			return next();
+		} catch (err) {
+			return res.status(500).json({ message: ERRORS.INTERNAL_SERVER_ERROR });
+		}
+	};
 
 module.exports = abstractUpdateValidateSchema;

@@ -31,20 +31,24 @@ module.exports = (conn) => {
 				defaultValue: Date.now
 			},
 			deadLineDate: { type: DataTypes.BIGINT, allowNull: false },
-			complete: {
-				type: DataTypes.BOOLEAN,
+			completeDate: {
+				type: DataTypes.BIGINT,
 				allowNull: false,
-				defaultValue: false
+				defaultValue: 0
 			}
 		},
 		{
 			timestamps: false,
 			hooks: {
+				beforeUpdate: (result) => {
+					delete result.dataValues.createDate;
+				},
 				beforeSave: (result) => {
 					convertToEntities(result, "taskDescription");
-					convertToTimestamp(result, "deadLineDate");
+					convertToTimestamp(result, "deadLineDate", "completeDate");
 				},
-				afterFind: (result) => mutateDates(result, "createDate", "deadLineDate")
+				afterFind: (result) =>
+					mutateDates(result, "createDate", "deadLineDate", "completeDate")
 			}
 		}
 	);

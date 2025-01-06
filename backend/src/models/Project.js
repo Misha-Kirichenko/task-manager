@@ -1,5 +1,5 @@
 const { Sequelize: DataTypes } = require("sequelize");
-const { convertToEntities } = require("./hooks");
+const { convertToEntities, convertToTimestamp } = require("./hooks");
 const mutateDates = require("./hooks/mutateDates");
 
 module.exports = (conn) => {
@@ -27,7 +27,10 @@ module.exports = (conn) => {
 		{
 			timestamps: false,
 			hooks: {
-				beforeSave: (result) => convertToEntities(result, "projectDescription"),
+				beforeSave: (result) => {
+					convertToEntities(result, "projectDescription");
+					convertToTimestamp(result, "startDate", "endDate");
+				},
 				afterFind: (result) => mutateDates(result, "startDate", "endDate")
 			}
 		}

@@ -63,6 +63,7 @@ router.patch(
 			);
 			return res.send(answer);
 		} catch (error) {
+			console.log("project update error", error);
 			const [errorType, errorDetails] = Object.values(error);
 			if (errorType === "SequelizeUniqueConstraintError") {
 				const { message } = errorDetails[0];

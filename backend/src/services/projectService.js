@@ -99,9 +99,7 @@ exports.createProject = async (body) => {
 };
 
 exports.updateProject = async (id, body) => {
-	const foundProject = await Project.findByPk(id, {
-		attributes: ["id"]
-	});
+	const foundProject = await Project.findByPk(id);
 
 	if (!foundProject) {
 		const notFoundException = createHttpException(
@@ -164,7 +162,7 @@ exports.toggle = async (userData, id) => {
 
 	if (endDateState) {
 		const projectTasks = await Task.count({
-			where: { projectId: id, complete: false }
+			where: { projectId: id, completeDate: 0 }
 		});
 
 		if (projectTasks) {

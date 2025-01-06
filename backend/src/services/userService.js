@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const conn = require("@config/conn");
 const { getUserProjectsQueryPipe } = require("./pipes");
 const { mutateDates } = require("@models/hooks");
@@ -83,10 +84,10 @@ exports.getMyProjectTasks = async (projectId, userId) => {
 		where: {
 			projectId,
 			userId,
-			complete: false
+			completeDate: { [Op.gt]: 0 }
 		},
 		attributes: {
-			exclude: ["projectId", "userId", "complete"]
+			exclude: ["projectId", "userId", "completeDate"]
 		},
 		order: [["createDate", "DESC"]]
 	});

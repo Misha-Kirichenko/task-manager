@@ -6,9 +6,7 @@ const MESSAGES = require("@constants/messages");
 const { USER_ROLES } = require("@constants/roles");
 
 exports.changeUserRole = async (id, role) => {
-	const foundUser = await User.findByPk(id, {
-		attributes: ["id", "role"]
-	});
+	const foundUser = await User.findByPk(id);
 
 	if (!foundUser) {
 		const notFoundException = createHttpException(
@@ -25,9 +23,7 @@ exports.changeUserRole = async (id, role) => {
 };
 
 exports.updateUser = async (id, body) => {
-	const foundUser = await User.findByPk(id, {
-		attributes: ["id"]
-	});
+	const foundUser = await User.findByPk(id);
 
 	if (!foundUser) {
 		const notFoundException = createHttpException(
