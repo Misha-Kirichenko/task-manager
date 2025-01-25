@@ -5,7 +5,7 @@ const {
 	adminController,
 	managerController,
 	projectController,
-	taskController
+	taskController,
 } = require("./controllers");
 
 router.use("/auth", authController);

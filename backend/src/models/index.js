@@ -4,6 +4,7 @@ module.exports = (conn) => {
 	const Admin = require("./Admin")(conn);
 	const UserProjects = require("./UserProjects")(conn);
 	const Task = require("./Task")(conn);
+	const TaskReport = require("./TaskReport")(conn);
 
 	User.hasMany(UserProjects, {
 		foreignKey: "userId",
@@ -66,11 +67,18 @@ module.exports = (conn) => {
 		as: "TaskUser"
 	});
 
+	TaskReport.belongsTo(Task, {
+		foreignKey: "taskId",
+		onDelete: "CASCADE",
+		as: "TaskReportTask"
+	});
+
 	return {
 		User,
 		Admin,
 		Project,
 		UserProjects,
-		Task
+		Task,
+		TaskReport
 	};
 };

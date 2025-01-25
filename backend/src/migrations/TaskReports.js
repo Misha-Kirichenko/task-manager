@@ -8,61 +8,49 @@ module.exports = (conn) => {
 			const transaction = await conn.transaction();
 			try {
 				const [tableExists] = await queryInterface.sequelize.query(
-					MIGRATION_UTIL.SELECT_TABLE("tasks"),
+					MIGRATION_UTIL.SELECT_TABLE("task_reports"),
 					{ transaction }
 				);
 
 				if (!tableExists.length) {
 					await queryInterface.createTable(
-						"tasks",
+						"task_reports",
 						{
 							id: {
 								type: DataTypes.INTEGER,
 								primaryKey: true,
 								autoIncrement: true
 							},
-							taskName: {
-								type: DataTypes.STRING,
-								unique: true,
-								allowNull: false
-							},
-							taskDescription: { type: DataTypes.TEXT, allowNull: false },
-							userId: {
+							taskId: {
 								type: DataTypes.INTEGER,
 								allowNull: false,
 								references: {
-									model: "users",
+									model: "tasks",
 									key: "id"
-								},
-								onUpdate: "CASCADE",
-								onDelete: "CASCADE"
-							},
-							completeDate: {
-								type: DataTypes.BIGINT,
-								allowNull: false,
-								defaultValue: 0
-							},
-							projectId: {
-								type: DataTypes.INTEGER,
-								allowNull: false,
-								references: {
-									model: "projects",
-									key: "id"
-								},
-								onUpdate: "CASCADE",
-								onDelete: "CASCADE"
+								}
 							},
 							createDate: {
 								type: DataTypes.BIGINT,
 								allowNull: false,
 								defaultValue: Date.now
 							},
-							deadLineDate: { type: DataTypes.BIGINT, allowNull: false }
+							reportText: { type: DataTypes.TEXT, allowNull: false },
+							managerResponse: {
+								type: DataTypes.TEXT,
+								allowNull: true,
+								defaultValue: null
+							},
+							managerResponseDate: {
+								type: DataTypes.BIGINT,
+								allowNull: true,
+								defaultValue: null
+							}
 						},
 						{ timestamps: false },
 						{ transaction }
 					);
-					console.log(MESSAGE_UTIL.SUCCESS.MIGRATION("tasks"));
+
+					console.log(MESSAGE_UTIL.SUCCESS.MIGRATION("task_reports"));
 				}
 				await transaction.commit();
 			} catch (error) {
@@ -71,7 +59,7 @@ module.exports = (conn) => {
 			}
 		},
 		down: async () => {
-			await queryInterface.dropTable("tasks");
+			await queryInterface.dropTable("task_reports");
 		}
 	};
 };

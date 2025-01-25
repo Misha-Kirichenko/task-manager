@@ -3,7 +3,7 @@ const userController = require("./userController");
 const adminController = require("./adminController");
 const projectController = require("./projectController");
 const managerController = require("./managerController");
-const taskController = require('./taskController');
+const taskController = require("./taskController");
 
 module.exports = {
 	authController,
@@ -11,5 +11,5 @@ module.exports = {
 	adminController,
 	managerController,
 	projectController,
-	taskController
+	taskController,
 };

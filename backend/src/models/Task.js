@@ -18,12 +18,11 @@ module.exports = (conn) => {
 			taskDescription: { type: DataTypes.TEXT, allowNull: false },
 			userId: {
 				type: DataTypes.INTEGER,
-				allowNull: true
+				allowNull: false,
 			},
 			projectId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				defaultValue: null
 			},
 			createDate: {
 				type: DataTypes.BIGINT,

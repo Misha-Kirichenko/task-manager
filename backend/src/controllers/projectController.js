@@ -63,7 +63,6 @@ router.patch(
 			);
 			return res.send(answer);
 		} catch (error) {
-			console.log("project update error", error);
 			const [errorType, errorDetails] = Object.values(error);
 			if (errorType === "SequelizeUniqueConstraintError") {
 				const { message } = errorDetails[0];
@@ -115,7 +114,6 @@ router.get(
 			const answer = await projectService.toggle(req.user, req.params.id);
 			return res.send(answer);
 		} catch (error) {
-			console.log("project toggle error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}

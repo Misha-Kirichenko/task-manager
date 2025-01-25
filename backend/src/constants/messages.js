@@ -35,12 +35,21 @@ module.exports = {
 			"You can't update task if associated project is completed",
 		ASSOC_MANAGER_UPDATE_TASK:
 			"Only associated manager or admin can update task",
-		HAS_ACTIVE_TASKS: "Can't finish project that has active tasks"
+		HAS_ACTIVE_TASKS: "Can't finish project that has active tasks",
+		REPORT_ON_COMPLETED_TASK: "Can't create report for completed task",
+		ANSWER_ON_COMPLETED_TASK: "Can't add manager's answer for completed task",
+		ASSOCIATED_USER_REPORT: "Only associated user can create report for task",
+		ASSOCIATED_MANAGER_ANSWER:
+			"Only associated manager can answer to users' report",
+		EMPTY_MANAGERS_RESPONSE: "Manager's response can't be empty",
+		MANAGER_RESPONSE_TYPE: "Manager's response must be of type 'string'",
+		UNACCEPTABLE_FIELDS: "unacceptable fields"
 	},
 	SUCCESS: {
 		PASSWORD_UPDATED: "Password was successfully updated",
 		ROLE_CHANGED: "User's role was successfully changed",
 		OP_SUCCESS: "Operation was successful",
-		UPDATED_TASK: "Task was successfully updated"
+		UPDATED_TASK: "Task was successfully updated",
+		MANAGERS_RESPONSE: "Manager's response was successfully added"
 	}
 };
