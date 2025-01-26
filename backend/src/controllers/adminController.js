@@ -184,4 +184,19 @@ router.get(
 	}
 );
 
+router.get(
+	"/task/reports/:taskId",
+	[verifyTokenMiddleware("access"), checkRolesMiddleware(ADMIN_ROLES)],
+	async (req, res) => {
+		try {
+			const answer = await adminService.getTaskReports(req.params.taskId);
+			return res.send(answer);
+		} catch (error) {
+			console.log("err", error);
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
 module.exports = router;

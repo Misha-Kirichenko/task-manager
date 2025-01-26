@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const conn = require("@config/conn");
-const { User } = require("@models")(conn);
+const { User, Task, TaskReport, Project } = require("@models")(conn);
+const { mutateDates } = require("@models/hooks");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
 const MESSAGES = require("@constants/messages");
 const { USER_ROLES } = require("@constants/roles");
@@ -89,4 +90,54 @@ exports.getAllUsers = async (role) => {
 
 	const foundUsers = await User.findAll({ where: { role } });
 	return foundUsers;
+};
+
+exports.getTaskReports = async (taskId) => {
+	const foundTask = await Task.findOne({
+		where: {
+			id: taskId
+		},
+		attributes: ["projectId"],
+		include: [
+			{
+				model: Project,
+				as: "TaskProject",
+				attributes: ["managerId"]
+			},
+			{
+				model: User,
+				as: "TaskUser",
+				attributes: { exclude: ["password", "role"] }
+			}
+		]
+	});
+
+	if (!foundTask) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Task")
+		);
+		throw notFoundException;
+	}
+
+	const plainTask = foundTask.get({ plain: true });
+
+	mutateDates(plainTask.TaskUser, "lastLogin");
+
+	const taskReports = await TaskReport.findAll({
+		where: { taskId },
+		order: [["createDate", "DESC"]],
+		raw: true
+	});
+
+	const manager = await User.findByPk(plainTask.TaskProject.managerId, {
+		attributes: { exclude: ["role", "id"] },
+		raw: true
+	});
+
+	return {
+		user: plainTask.TaskUser,
+		manager,
+		reports: taskReports
+	};
 };

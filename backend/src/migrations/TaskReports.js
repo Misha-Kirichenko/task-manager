@@ -27,7 +27,9 @@ module.exports = (conn) => {
 								references: {
 									model: "tasks",
 									key: "id"
-								}
+								},
+								onUpdate: "CASCADE",
+								onDelete: "CASCADE"
 							},
 							createDate: {
 								type: DataTypes.BIGINT,

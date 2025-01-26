@@ -43,7 +43,11 @@ module.exports = {
 			"Only associated manager can answer to users' report",
 		EMPTY_MANAGERS_RESPONSE: "Manager's response can't be empty",
 		MANAGER_RESPONSE_TYPE: "Manager's response must be of type 'string'",
-		UNACCEPTABLE_FIELDS: "unacceptable fields"
+		UNACCEPTABLE_FIELDS: "unacceptable fields",
+		ASSOCIATED_USER_TASK_REPORTS:
+			"Only associated user can retrieve task reports",
+		ASSOCIATED_MANAGER_TASK_REPORTS:
+			"Only associated manager can retrieve task reports"
 	},
 	SUCCESS: {
 		PASSWORD_UPDATED: "Password was successfully updated",

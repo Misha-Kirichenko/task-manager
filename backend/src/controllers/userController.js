@@ -26,7 +26,6 @@ router.get(
 			const answer = await userService.getMyProjects(req.user.id);
 			return res.send(answer);
 		} catch (error) {
-			console.log("projects error", error);
 			const { status, message } = statusCodeMessage(error);
 			return res.status(status).send({ message });
 		}
@@ -47,13 +46,32 @@ router.get(
 	}
 );
 
-
 router.get(
 	"/project/tasks/:id",
 	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[1]])],
 	async (req, res) => {
 		try {
-			const answer = await userService.getMyProjectTasks(req.params.id, req.user.id);
+			const answer = await userService.getMyProjectTasks(
+				req.params.id,
+				req.user.id
+			);
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
+router.get(
+	"/task/reports/:taskId",
+	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[1]])],
+	async (req, res) => {
+		try {
+			const answer = await userService.getTaskReports(
+				req.params.taskId,
+				req.user.id
+			);
 			return res.send(answer);
 		} catch (error) {
 			const { status, message } = statusCodeMessage(error);

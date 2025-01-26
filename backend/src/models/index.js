@@ -73,6 +73,7 @@ module.exports = (conn) => {
 		as: "TaskReportTask"
 	});
 
+
 	return {
 		User,
 		Admin,

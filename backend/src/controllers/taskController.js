@@ -22,6 +22,12 @@ const { statusCodeMessage } = require("@utils");
 const taskReportService = require("@services/taskReportService");
 const taskService = require("@services/taskService");
 
+const taskDeleteService = require("@services/abstractDeleteService")(Task);
+const taskReportDeleteService = require("@services/abstractDeleteService")(
+	TaskReport
+);
+
+
 router.post(
 	"/",
 	[
@@ -126,10 +132,7 @@ router.post(
 
 router.patch(
 	"/report/manager-response/:taskReportId",
-	[
-		verifyTokenMiddleware("access"),
-		checkRolesMiddleware([USER_ROLES[0]]),
-	],
+	[verifyTokenMiddleware("access"), checkRolesMiddleware([USER_ROLES[0]])],
 	async (req, res) => {
 		try {
 			const answer = await taskReportService.addManagerResponse(
@@ -144,4 +147,41 @@ router.patch(
 		}
 	}
 );
+
+router.delete(
+	"/:id",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware([ADMIN_ROLES[0], USER_ROLES[0]])
+	],
+	async (req, res) => {
+		try {
+			const answer = await taskDeleteService.delete(req.params.id);
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
+router.delete(
+	"/report/:taskReportId",
+	[
+		verifyTokenMiddleware("access"),
+		checkRolesMiddleware([ADMIN_ROLES[0], USER_ROLES[0]])
+	],
+	async (req, res) => {
+		try {
+			const answer = await taskReportDeleteService.delete(
+				req.params.taskReportId
+			);
+			return res.send(answer);
+		} catch (error) {
+			const { status, message } = statusCodeMessage(error);
+			return res.status(status).send({ message });
+		}
+	}
+);
+
 module.exports = router;

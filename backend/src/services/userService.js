@@ -1,9 +1,10 @@
 const { Op } = require("sequelize");
 const conn = require("@config/conn");
 const { getUserProjectsQueryPipe } = require("./pipes");
-const { mutateDates } = require("@models/hooks");
+const MESSAGES = require("@constants/messages");
 const { MESSAGE_UTIL, createHttpException } = require("@utils");
-const { UserProjects, Project, User, Task } = require("@models")(conn);
+const { UserProjects, Project, User, Task, TaskReport } =
+	require("@models")(conn);
 
 exports.getMyProject = async (projectId, userId) => {
 	const userProjectExists = await UserProjects.count({
@@ -93,4 +94,56 @@ exports.getMyProjectTasks = async (projectId, userId) => {
 	});
 
 	return tasks;
+};
+
+
+exports.getTaskReports = async (taskId, userId) => {
+	const foundTask = await Task.findOne({
+		where: {
+			id: taskId,
+			completeDate: 0
+		},
+		attributes: ["projectId", "userId"],
+		include: [
+			{
+				model: Project,
+				as: "TaskProject",
+				attributes: ["managerId"]
+			},
+		]
+	});
+
+	if (!foundTask) {
+		const notFoundException = createHttpException(
+			404,
+			MESSAGE_UTIL.ERRORS.NOT_FOUND("Task")
+		);
+		throw notFoundException;
+	}
+
+	if (foundTask.userId !== userId) {
+		const unprocessableException = createHttpException(
+			422,
+			MESSAGES.ERRORS.ASSOCIATED_USER_TASK_REPORTS
+		);
+		throw unprocessableException;
+	}
+
+	const plainTask = foundTask.get({ plain: true });
+
+	const taskReports = await TaskReport.findAll({
+		where: { taskId },
+		order: [["createDate", "DESC"]],
+		raw: true
+	});
+
+	const manager = await User.findByPk(plainTask.TaskProject.managerId, {
+		attributes: { exclude: ["role", "id"] },
+		raw: true
+	});
+
+	return {
+		manager,
+		reports: taskReports
+	};
 };
