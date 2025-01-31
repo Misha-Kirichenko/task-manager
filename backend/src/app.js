@@ -3,7 +3,7 @@ require("module-alias/register");
 
 const express = require("express");
 const app = express();
-const router = require("@root/router");
+const router = require("./router");
 const conn = require("@config/conn");
 const connectDB = require("@config/connectDB");
 
