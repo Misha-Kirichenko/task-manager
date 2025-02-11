@@ -30,16 +30,16 @@ services:
       - task-manager-db
     networks:
       - task-manager-network
-  task-manager-frontend:
-    build:
-      context: ./frontend
-    container_name: task-manager-frontend
-    ports:
-      - "8080:80"
-    depends_on:
-      - task-manager-backend
-    networks:
-      - task-manager-network
+  # task-manager-frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: task-manager-frontend
+  #   ports:
+  #     - "8080:80"
+  #   depends_on:
+  #     - task-manager-backend
+  #   networks:
+  #     - task-manager-network
 
 volumes:
   user_uploads:

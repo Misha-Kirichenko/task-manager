@@ -9,21 +9,8 @@ const { validatePasswordMiddleware } = require("@middlewares/validation");
 
 module.exports = (Model, roles) => {
 	const router = Router();
-	const authService = require("@services/authService")(Model, roles);
 	const profileService = require("@services/profileService")(Model);
-
-	router.post("/login", async (req, res) => {
-		try {
-			const { login, password } = req.body;
-			const answer = await authService.login(login, password);
-			return res.send(answer);
-		} catch (error) {
-			console.log("auth error", error);
-			const { status, message } = statusCodeMessage(error);
-			return res.status(status).send({ message });
-		}
-	});
-
+	
 	router.get(
 		"/profile",
 		[verifyTokenMiddleware("access"), checkRolesMiddleware(roles)],

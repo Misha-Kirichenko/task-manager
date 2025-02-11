@@ -23,7 +23,7 @@ const adminService = require("@services/adminService");
 const projectService = require("@services/projectService");
 const userDeleteService = require("@services/abstractDeleteService")(User);
 
-const abstractUserController = createAbstractUserController(Admin);
+const abstractUserController = createAbstractUserController(Admin, ADMIN_ROLES);
 
 router.use("/", abstractUserController);
 
